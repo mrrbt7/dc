@@ -232,7 +232,20 @@ function BoardsScreen({user,onSelect,onSignOut}){
   };
   useEffect(()=>{load();},[]);
 
-  const create=async()=>{if(!newName.trim())return;setSaving(true);const{data}=await db.rpc("create_board",{p_name:newName.trim(),p_emoji:newEmoji});setSaving(false);if(data){setCreating(false);setNewName("");setNewEmoji("🏡");load();}};
+  const create=async()=>{
+    if(!newName.trim())return;
+    setSaving(true);
+    const{data,error}=await db.from("boards").insert({user_id:user.id,name:newName.trim(),emoji:newEmoji}).select().single();
+    if(!error&&data){
+      // Ensure user is owner in board_members (trigger may handle this, belt+suspenders)
+      await db.from("board_members").upsert({board_id:data.id,user_id:user.id,role:"owner"},{onConflict:"board_id,user_id"});
+      setCreating(false);setNewName("");setNewEmoji("🏡");load();
+    } else {
+      console.error("create board error",error);
+      alert("Could not create board: "+(error?.message||"unknown error"));
+    }
+    setSaving(false);
+  };
 
   const startEdit=b=>{setEditingId(b.id);setEditName(b.name);setEditEmoji(b.emoji);};
   const saveEdit=async id=>{
@@ -3915,14 +3928,18 @@ function Root(){
       setBoard(boards[0]); // always the first/oldest = Master Board
       setScreen("app");
     } else {
-      // No boards yet — auto-create Master Board
-      const{data}=await db.rpc("create_board",{p_name:"Master Board",p_emoji:"🏠"});
-      if(data?.id){
-        const{data:nb}=await db.from("boards").select("*").eq("id",data.id).single();
-        if(nb){setBoard(nb);setAllBoards([nb]);setScreen("app");return;}
+      // No boards yet — auto-create Master Board via direct insert (no RPC needed)
+      const{data:nb,error}=await db.from("boards")
+        .insert({user_id:u.id,name:"Master Board",emoji:"🏠"})
+        .select().single();
+      if(!error&&nb){
+        // Belt+suspenders: ensure owner membership in case trigger didn't fire
+        await db.from("board_members").upsert({board_id:nb.id,user_id:u.id,role:"owner"},{onConflict:"board_id,user_id"});
+        setBoard(nb);setAllBoards([{...nb,role:"owner"}]);setScreen("app");
+      } else {
+        console.error("auto-create master board failed",error);
+        setScreen("boards"); // fallback: let user create manually
       }
-      // fallback to boards screen if rpc failed
-      setScreen("boards");
     }
   };
 
