@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="theme-color" content="#000000"/>
-<title>MR v3.3</title>
+<title>MR v3.5</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -58,7 +58,7 @@ const GAMEDAY_OPTS=["","GAMEDAY","DAY BEFORE GD","2 DAYS BEFORE GD","3 DAYS BEFO
 const DEFAULT_ACTIONS=[{id:"buy",emoji:"🛒",label:"Buy"},{id:"call",emoji:"📞",label:"Call"},{id:"email",emoji:"📧",label:"Email"},{id:"research",emoji:"🔍",label:"Research"},{id:"review",emoji:"👁",label:"Review"},{id:"schedule",emoji:"📅",label:"Schedule"},{id:"watch",emoji:"👀",label:"Watch"},{id:"read",emoji:"📖",label:"Read"},{id:"fix",emoji:"🔧",label:"Fix"},{id:"build",emoji:"🏗",label:"Build"},{id:"plan",emoji:"📋",label:"Plan"},{id:"pay",emoji:"💳",label:"Pay"}];
 const WDN=["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
 const WDL=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-const DEF_SETTINGS={hideEmptyDo:false,defaultView:'dash',dayStartTime:'00:30',hideTimeFrames:false,showActionTag:false,showBucketColor:true,showCardBg:true,showDuration:true,showFrequency:true};
+const DEF_SETTINGS={hideEmptyDo:false,defaultView:'dash',lightMode:false,dayStartTime:'00:30',hideTimeFrames:false,showActionTag:false,showBucketColor:true,showCardBg:true,showDuration:true,showFrequency:true};
 // Eastern time with configurable day-start rollover
 const etNow=()=>{
   const now=new Date();
@@ -974,6 +974,8 @@ function DisplayMdl({settings,onChange,onClose}){
         {row("SHOW frequency","showFrequency")}
         {sec("TIMELINE VIEW")}
         {rowInv("SHOW time frames","hideTimeFrames")}
+        {sec("THEME")}
+        {row("Light Mode","lightMode")}
       </div>
       <div style={{padding:"14px 18px 18px",display:"flex",justifyContent:"flex-end",borderTop:`1px solid ${BORDER}`,marginTop:12}}>
         <button onClick={onClose} style={{padding:"7px 18px",borderRadius:8,border:"none",background:LIME,color:"#000",cursor:"pointer",fontWeight:700,fontFamily:"inherit",fontSize:12}}>Done</button>
@@ -1087,7 +1089,7 @@ function SettingsMdl({settings,onChange,onBuckets,onMembers,onActions,onBrands,o
     </div>
   );
   const sec=label=>(<div style={{fontSize:9,fontWeight:700,letterSpacing:1.5,color:MUTED,textTransform:"uppercase",padding:"14px 0 6px",marginTop:2}}>{label}</div>);
-  const VIEWS=[{id:"dash",label:"Dashboard ◈"},{id:"onesies",label:"Onesies ①"},{id:"inbox",label:"Inbox ⊟"},{id:"cal",label:"Calendar ▦"},{id:"day",label:"Timeline ⏱"},{id:"board",label:"Board ⊞"},{id:"list",label:"List ☰"},{id:"health",label:"Health ⬡"},{id:"monthly",label:"Monthly+ ◷"}];
+  const VIEWS=[{id:"dash",label:"Dashboard ◈"},{id:"onesies",label:"Onesies ①"},{id:"inbox",label:"Inbox ⊟"},{id:"cal",label:"Calendar ▦"},{id:"day",label:"Timeline ⏱"},{id:"board",label:"Board ⊞"},{id:"list",label:"List ☰"},{id:"health",label:"Health ⬡"},{id:"monthly",label:"Monthly+ ◷"},{id:"gameday",label:"Gameday 🏈"}];
   return(
     <Modal onClose={onClose} maxWidth={360}>
       <div style={{padding:"18px 18px 4px"}}>
@@ -1526,7 +1528,7 @@ function TaskCard({task,buckets,onEdit,onDelete,onCheck,onDuplicate,showBucket,o
   const cardBorder=celebrating_?"#30D158":isDone?"#30D15833":dlShow?.color==="#FF453A"?"#FF453A44":bktMainColor?bktMainColor+"33":tcBorder;
   const cardText=null;
   return(
-    <div draggable={!listMode&&!readOnly&&!celebrating_&&!isDone} onDragStart={e=>{e.dataTransfer.effectAllowed="move";onDragStart&&onDragStart(task.id);}} onDragOver={e=>{e.preventDefault();onDragOver&&onDragOver(task.id);}} onDrop={e=>{e.preventDefault();onDrop&&onDrop(task.id);}} onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
+    <div onDragOver={e=>{e.preventDefault();onDragOver&&onDragOver(task.id);}} onDrop={e=>{e.preventDefault();onDrop&&onDrop(task.id);}} onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
       style={{borderRadius:10,padding:"9px 11px",marginBottom:5,border:`1px solid ${cardBorder}`,opacity:isDragging?.35:isDone?.6:1,cursor:"pointer",position:"relative",overflow:"hidden",transition:"border-color .3s,background .3s",
 
         boxShadow:celebrating_?"0 0 18px #30D15844":"none"}}>
@@ -1560,8 +1562,9 @@ function TaskCard({task,buckets,onEdit,onDelete,onCheck,onDuplicate,showBucket,o
                 <button onClick={e=>{e.stopPropagation();setHovMenu(m=>!m);}} style={{background:"none",border:"none",cursor:"pointer",color:MUTED,fontSize:14,padding:"0 2px",lineHeight:1,letterSpacing:1}} onMouseEnter={e=>e.currentTarget.style.color=TEXT} onMouseLeave={e=>e.currentTarget.style.color=MUTED}>⋯</button>
                 {hovMenu&&(
                   <div onClick={e=>e.stopPropagation()} style={{position:"absolute",right:0,top:"calc(100% + 2px)",background:"#1a1a1a",border:`1px solid #333`,borderRadius:9,zIndex:999,minWidth:150,boxShadow:"0 8px 24px rgba(0,0,0,.9)"}}>
-                    {onDuplicate&&<button onClick={e=>{e.stopPropagation();onDuplicate(task);setHovMenu(false);}} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"9px 13px",background:"none",border:"none",cursor:"pointer",color:TEXT,fontFamily:"inherit",fontSize:12,textAlign:"left",borderRadius:"9px 9px 0 0"}} onMouseEnter={e=>e.currentTarget.style.background="#222"} onMouseLeave={e=>e.currentTarget.style.background="none"}>📋 Duplicate</button>}
-                    {onDelete&&<button onClick={e=>{e.stopPropagation();onDelete(task.id);setHovMenu(false);}} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"9px 13px",background:"none",border:"none",cursor:"pointer",color:"#FF453A",fontFamily:"inherit",fontSize:12,textAlign:"left",borderRadius:onDuplicate?"0 0 9px 9px":"9px"}} onMouseEnter={e=>e.currentTarget.style.background="#1a0808"} onMouseLeave={e=>e.currentTarget.style.background="none"}>🗑 Delete</button>}
+                    {!listMode&&onDragStart&&<div draggable onDragStart={e=>{e.stopPropagation();e.dataTransfer.effectAllowed="move";onDragStart(task.id);setHovMenu(false);}} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"9px 13px",background:"none",border:"none",borderBottom:"1px solid #2a2a2a",cursor:"grab",color:TEXT,fontFamily:"inherit",fontSize:12,textAlign:"left",borderRadius:"9px 9px 0 0",userSelect:"none"}} onMouseEnter={e=>e.currentTarget.style.background="#222"} onMouseLeave={e=>e.currentTarget.style.background="none"}>⠿ Drag to Reorder</div>}
+                    {onDuplicate&&<button onClick={e=>{e.stopPropagation();onDuplicate(task);setHovMenu(false);}} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"9px 13px",background:"none",border:"none",cursor:"pointer",color:TEXT,fontFamily:"inherit",fontSize:12,textAlign:"left"}} onMouseEnter={e=>e.currentTarget.style.background="#222"} onMouseLeave={e=>e.currentTarget.style.background="none"}>📋 Duplicate</button>}
+                    {onDelete&&<button onClick={e=>{e.stopPropagation();onDelete(task.id);setHovMenu(false);}} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"9px 13px",background:"none",border:"none",cursor:"pointer",color:"#FF453A",fontFamily:"inherit",fontSize:12,textAlign:"left",borderRadius:"0 0 9px 9px"}} onMouseEnter={e=>e.currentTarget.style.background="#1a0808"} onMouseLeave={e=>e.currentTarget.style.background="none"}>🗑 Delete</button>}
                   </div>
                 )}
               </div>
@@ -2812,15 +2815,28 @@ function DashboardView({tasks,buckets,onEdit,onCheck,celebratingIds,readOnly,day
     </div>
   );
 
-  // ── Tomorrow Preview Mode ────────────────────────────────────
-  if(dayFilter==="tomorrow"){
-    const tmrStr=(()=>{const d=new Date(todayStr()+"T00:00:00");d.setDate(d.getDate()+1);return d.toISOString().split("T")[0];})();
-    const tmrLbl=new Date(tmrStr+"T00:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
-    const tmrAll=tasks.filter(t=>!excl(t)&&t.dueDate&&t.dueDate===tmrStr).sort((a,b)=>{const at=a.time?t2m(a.time):9999,bt=b.time?t2m(b.time):9999;return at-bt;});
-    const tmrEarly=tmrAll.filter(t=>!t.time||(t.time&&t2m(t.time)<720));
-    const tmrDay=tmrAll.filter(t=>t.time&&t2m(t.time)>=720&&t2m(t.time)<1080);
-    const tmrNight=tmrAll.filter(t=>t.time&&t2m(t.time)>=1080);
-    const TmrCard=({t})=>{
+  // ── Date Preview Mode (any specific date from dropdown) ────────────────
+  const _isSpecificDate=dayFilter!=="today"&&dayFilter!=="all"&&dayFilter!=="overdue"&&dayFilter!=="todaytomorrow";
+  if(_isSpecificDate){
+    // Compute the preview date string and label
+    let _pvDateStr,_pvLabel;
+    if(dayFilter==="tomorrow"){
+      const _d=new Date(todayStr()+"T00:00:00");_d.setDate(_d.getDate()+1);_pvDateStr=_d.toISOString().split("T")[0];
+      _pvLabel=_d.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
+    } else if(dayFilter.startsWith("wd:")){
+      const _wd=parseInt(dayFilter.slice(3));const _n=new Date(todayStr()+"T00:00:00");
+      let _dd=new Date(_n);while(_dd.getDay()!==_wd)_dd.setDate(_dd.getDate()+1);
+      _pvDateStr=_dd.toISOString().split("T")[0];
+      _pvLabel=_dd.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
+    } else { _pvDateStr=null; _pvLabel=""; }
+    const _pvAll=_pvDateStr?tasks.filter(t=>!excl(t)&&t.dueDate&&t.dueDate===_pvDateStr):[];
+    // timed first sorted by time, untimed last
+    const _pvTimed=[..._pvAll.filter(t=>t.time)].sort((a,b)=>t2m(a.time)-t2m(b.time));
+    const _pvNoTime=_pvAll.filter(t=>!t.time);
+    const _pvEarly=_pvTimed.filter(t=>t2m(t.time)<720);
+    const _pvDay=_pvTimed.filter(t=>t2m(t.time)>=720&&t2m(t.time)<1080);
+    const _pvNight=_pvTimed.filter(t=>t2m(t.time)>=1080);
+    const PvCard=({t})=>{
       const bkt=buckets.find(b=>b.id===t.bucketId);
       return(
         <div onClick={()=>onEdit(t)} style={{background:"#0e0e0e",borderRadius:10,border:"1px solid #1a1a1a",padding:"11px 14px",marginBottom:6,cursor:"pointer",display:"flex",alignItems:"center",gap:10}}
@@ -2829,11 +2845,11 @@ function DashboardView({tasks,buckets,onEdit,onCheck,celebratingIds,readOnly,day
             <div style={{fontSize:13,color:TEXT,fontWeight:500,lineHeight:1.4,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.title||"Untitled"}</div>
             {bkt&&<div style={{fontSize:10,color:bkt.mainColor||MUTED,marginTop:2}}>{bkt.emoji} {bkt.label}</div>}
           </div>
-          {t.time&&<div style={{fontSize:14,fontWeight:700,color:"#8E8EF0",flexShrink:0}}>{fmtTime(t.time)}</div>}
+          {t.time?<div style={{fontSize:14,fontWeight:700,color:"#8E8EF0",flexShrink:0}}>{fmtTime(t.time)}</div>:<div style={{fontSize:11,color:"#444",flexShrink:0}}>no time</div>}
         </div>
       );
     };
-    const TmrSection=({icon,label,color,items})=>items.length===0?null:(
+    const PvSection=({icon,label,color,items})=>items.length===0?null:(
       <div style={{marginBottom:22}}>
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
           <span style={{fontSize:14}}>{icon}</span>
@@ -2841,21 +2857,22 @@ function DashboardView({tasks,buckets,onEdit,onCheck,celebratingIds,readOnly,day
           <div style={{flex:1,height:1,background:color+"22",marginLeft:4}}/>
           <span style={{fontSize:11,color,fontWeight:700,background:color+"22",padding:"2px 8px",borderRadius:99}}>{items.length}</span>
         </div>
-        {items.map(t=><TmrCard key={t.id} t={t}/>)}
+        {items.map(t=><PvCard key={t.id} t={t}/>)}
       </div>
     );
     return(
       <div style={{flex:1,overflowY:"auto",padding:"16px 16px 32px"}}>
         <div style={{maxWidth:600,margin:"0 auto"}}>
           <div style={{marginBottom:20,textAlign:"center"}}>
-            <div style={{fontSize:11,color:MUTED,letterSpacing:1,textTransform:"uppercase",marginBottom:2}}>Tomorrow Preview</div>
-            <div style={{fontSize:18,fontWeight:800,color:TEXT,letterSpacing:-.3}}>{tmrLbl}</div>
-            <div style={{marginTop:6,fontSize:12,color:MUTED}}>{tmrAll.length} tasks planned</div>
+            <div style={{fontSize:11,color:MUTED,letterSpacing:1,textTransform:"uppercase",marginBottom:2}}>Day Preview</div>
+            <div style={{fontSize:18,fontWeight:800,color:TEXT,letterSpacing:-.3}}>{_pvLabel}</div>
+            <div style={{marginTop:6,fontSize:12,color:MUTED}}>{_pvAll.length} tasks planned</div>
           </div>
-          {tmrAll.length===0&&<div style={{textAlign:"center",padding:"32px 0",color:MUTED,fontSize:13,fontStyle:"italic"}}>Nothing scheduled for tomorrow yet.</div>}
-          <TmrSection icon="🌅" label="Do Early" color="#FF9F0A" items={tmrEarly}/>
-          <TmrSection icon="☀️" label="During The Day" color="#5E5CE6" items={tmrDay}/>
-          <TmrSection icon="🌙" label="At Night" color="#0A84FF" items={tmrNight}/>
+          {_pvAll.length===0&&<div style={{textAlign:"center",padding:"32px 0",color:MUTED,fontSize:13,fontStyle:"italic"}}>Nothing scheduled for this day yet.</div>}
+          <PvSection icon="🌅" label="Morning" color="#FF9F0A" items={_pvEarly}/>
+          <PvSection icon="☀️" label="Afternoon" color="#5E5CE6" items={_pvDay}/>
+          <PvSection icon="🌙" label="Evening" color="#0A84FF" items={_pvNight}/>
+          <PvSection icon="📋" label="No Time" color="#555" items={_pvNoTime}/>
         </div>
       </div>
     );
@@ -3438,7 +3455,7 @@ function QuickAddModal({boardId,buckets,onAdd,onClose}){
 }
 
 function Sidebar({viewMode,onView,onClose,onBack,onBoards,onSettings,onDisplay,onStats,onBuckets,onActions,onBrands,onPersons,onLabels,onImport,board}){
-  const VIEWS=[{id:"dash",icon:"◈",label:"Dashboard"},{id:"onesies",icon:"①",label:"Onesies"},{id:"inbox",icon:"⊟",label:"Inbox"},{id:"cal",icon:"▦",label:"Calendar"},{id:"day",icon:"⏱",label:"Timeline"},{id:"board",icon:"⊞",label:"Board"},{id:"list",icon:"☰",label:"List"},{id:"monthly",icon:"◷",label:"Monthly+"},{id:"health",icon:"⬡",label:"Health"},{id:"ref",icon:"⊟",label:"Reference"},{id:"taba",icon:"◉",label:"Tabata"}];
+  const VIEWS=[{id:"dash",icon:"◈",label:"Dashboard"},{id:"onesies",icon:"①",label:"Onesies"},{id:"inbox",icon:"⊟",label:"Inbox"},{id:"cal",icon:"▦",label:"Calendar"},{id:"day",icon:"⏱",label:"Timeline"},{id:"board",icon:"⊞",label:"Board"},{id:"list",icon:"☰",label:"List"},{id:"monthly",icon:"◷",label:"Monthly+"},{id:"health",icon:"⬡",label:"Health"},{id:"ref",icon:"⊟",label:"Reference"},{id:"taba",icon:"◉",label:"Tabata"},{id:"gameday",icon:"🏈",label:"Gameday"}];
   const row=(icon,label,onClick,active)=>(
     <button onClick={onClick} style={{display:"flex",alignItems:"center",gap:12,width:"100%",padding:"11px 18px",border:"none",background:active?"#161616":"transparent",color:active?TEXT:MUTED,fontFamily:"inherit",fontSize:13,fontWeight:active?700:400,cursor:"pointer",textAlign:"left",borderRadius:0,transition:"background .1s"}}
       onMouseEnter={e=>{if(!active)e.currentTarget.style.background="#111";}}
@@ -3478,6 +3495,50 @@ function Sidebar({viewMode,onView,onClose,onBack,onBoards,onSettings,onDisplay,o
         </div>
       </div>
     </>
+  );
+}
+
+function GamedayView({tasks,buckets,onEdit,onCheck,onDelete,celebratingIds,readOnly,onAddTask,boardId}){
+  const gdTasks=tasks.filter(t=>!t.isRef&&t.gameday&&t.gameday.trim());
+  const groups={};
+  gdTasks.forEach(t=>{const k=t.gameday;if(!groups[k])groups[k]=[];groups[k].push(t);});
+  const orderedKeys=GAMEDAY_OPTS.filter(o=>o&&groups[o]);
+  const unmatched=Object.keys(groups).filter(k=>!GAMEDAY_OPTS.includes(k));
+  const allKeys=[...orderedKeys,...unmatched];
+  const [adding,setAdding]=useState(false);
+  const Sec=({gdKey,items})=>(
+    <div style={{marginBottom:22}}>
+      <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:8,paddingLeft:2}}>
+        <div style={{width:6,height:6,borderRadius:"50%",background:LIME,flexShrink:0}}/>
+        <span style={{fontSize:11,fontWeight:700,color:LIME,letterSpacing:.8,textTransform:"uppercase"}}>{gdKey}</span>
+        <span style={{fontSize:11,color:MUTED,marginLeft:2}}>{items.length}</span>
+        <div style={{flex:1,height:1,background:LIME+"22",marginLeft:4}}/>
+      </div>
+      {items.map(t=><TaskCard key={t.id} task={t} buckets={buckets} onEdit={onEdit} onDelete={onDelete} onCheck={onCheck} showBucket={true} listMode={true} readOnly={readOnly} celebrating={celebratingIds.has(t.id)} onDragStart={()=>{}} onDragOver={()=>{}} onDrop={()=>{}} isDragging={false}/>)}
+    </div>
+  );
+  return(
+    <div style={{flex:1,display:"flex",flexDirection:"column",minHeight:0}}>
+      <div style={{padding:"10px 16px 8px",borderBottom:`1px solid ${BORDER}`,background:"#000",flexShrink:0,display:"flex",alignItems:"center",gap:8}}>
+        <span style={{fontSize:12,fontWeight:700,color:LIME,letterSpacing:.6,textTransform:"uppercase"}}>🏈 Gameday</span>
+        <span style={{fontSize:11,color:MUTED}}>{gdTasks.length} tasks</span>
+        <div style={{flex:1}}/>
+        <span style={{fontSize:10,color:"#333"}}>grouped by gameday</span>
+      </div>
+      <div style={{flex:1,overflowY:"auto",padding:"14px 16px",maxWidth:640,margin:"0 auto",width:"100%"}}>
+        {gdTasks.length===0&&(
+          <div style={{textAlign:"center",padding:"56px 0",color:MUTED,fontSize:14}}>
+            <div style={{fontSize:32,marginBottom:10}}>🏈</div>
+            No gameday tasks yet — assign the Gameday field to a task.
+          </div>
+        )}
+        {allKeys.map(k=><Sec key={k} gdKey={k} items={groups[k]}/>)}
+        {!readOnly&&<div style={{marginTop:8}}>
+          {adding?<InlineAdd colId="do" boardId={boardId} onAdd={t=>{onAddTask(t);setAdding(false);}} onCancel={()=>setAdding(false)}/>
+          :<button onClick={()=>setAdding(true)} style={{display:"flex",alignItems:"center",gap:6,background:"none",border:`1px dashed ${BORDER}`,borderRadius:9,cursor:"pointer",color:MUTED,fontSize:13,fontFamily:"inherit",padding:"9px 14px",width:"100%",justifyContent:"center"}} onMouseEnter={e=>{e.currentTarget.style.borderColor="#444";e.currentTarget.style.color=TEXT;}} onMouseLeave={e=>{e.currentTarget.style.borderColor=BORDER;e.currentTarget.style.color=MUTED;}}>+ Add Gameday Task</button>}
+        </div>}
+      </div>
+    </div>
   );
 }
 
@@ -3802,28 +3863,22 @@ function MainApp({user,board,allBoards,onSwitchBoard,onBack,onSignOut}){
 
   const childBucketIds=useMemo(()=>activeTab==="all"?[]:buckets.filter(b=>b.parentId===activeTab).map(b=>b.id),[activeTab,buckets]);
   const hiddenBucketIds=new Set(buckets.filter(b=>b.hidden).map(b=>b.id));
+  // vis = MASTER filter: both bucket and date filters applied
   const vis=tasks.filter(t=>{
-    // Bucket filter
+    if(t.isRef)return false;
+    if(hiddenBucketIds.size>0&&t.bucketId&&hiddenBucketIds.has(t.bucketId))return false;
     if(activeTab!=="all"&&t.bucketId!==activeTab&&!childBucketIds.includes(t.bucketId))return false;
-    // Date filter — "all" shows everything, others restrict by date
     if(dayFilter==="all")return true;
-    if(!t.dueDate){
-      // undated tasks: only show in "all" or "inbox"-like contexts
-      return false;
-    }
+    if(!t.dueDate)return false;
     const d=daysDiff(t.dueDate);
-    if(dayFilter==="today")return d<=0; // today + overdue
-    if(dayFilter==="todaytomorrow")return d<=1; // today + overdue + tomorrow
+    if(dayFilter==="today")return d<=0;
+    if(dayFilter==="todaytomorrow")return d<=1;
     if(dayFilter==="tomorrow")return d===1;
     if(dayFilter==="overdue")return d<0;
     if(dayFilter.startsWith("wd:")){const _wd=parseInt(dayFilter.slice(3));return new Date(t.dueDate+"T00:00:00").getDay()===_wd;}
-    if(hiddenBucketIds.size>0&&t.bucketId&&hiddenBucketIds.has(t.bucketId))return false;
-    if(t.isRef)return false; // ref tasks live in Ref view only
     return true;
   });
-
-
-  // Bucket-only filter for views that show ALL tasks regardless of day filter
+  // visBucket = bucket-only filter (for views like Onesies/Gameday/Health)
   const visBucket=tasks.filter(t=>{
     if(t.isRef)return false;
     if(hiddenBucketIds.size>0&&t.bucketId&&hiddenBucketIds.has(t.bucketId))return false;
@@ -3838,9 +3893,15 @@ function MainApp({user,board,allBoards,onSwitchBoard,onBack,onSignOut}){
 
   if(loading)return(<div style={{height:"100%",display:"flex",alignItems:"center",justifyContent:"center",background:"#000",flexDirection:"column",gap:12}}><Logo size={36}/><div className="spin" style={{width:20,height:20,border:`2px solid ${BORDER}`,borderTopColor:LIME,borderRadius:"50%"}}/><div style={{fontSize:12,color:MUTED}}>Loading {board.name}…</div></div>);
 
-  const theme={
+  const lm=!!settings.lightMode;
+  const _tVars=lm?{
+    bg:"#3c3c40",navBg:"#2e2e33",cardBg:"#f2f2f7",col:"#e8e8ed",border:"#c0c0c8",
+    text:"#1a1a1a",muted:"#666",inp:"#e0e0e8"
+  }:{
     bg:"#000",navBg:"#000",cardBg:"#1c1c1e",col:"#111",border:"#2a2a2a",
-    text:"#e8e8e8",muted:"#555",inp:"#1a1a1a",lm:false,
+    text:"#e8e8e8",muted:"#555",inp:"#1a1a1a"
+  };
+  const theme={..._tVars,lm,
     showActionTag:!!settings.showActionTag,
     showBucketColor:settings.showBucketColor!==false,
     showCardBg:settings.showCardBg!==false,
@@ -3873,8 +3934,8 @@ function MainApp({user,board,allBoards,onSwitchBoard,onBack,onSignOut}){
         <div style={{display:"flex",flexDirection:"column",flex:1,minHeight:0}}>
         <QuickAddBar boardId={board.id} onAdd={addTask} onOpenModal={()=>setShowQuickAdd(true)} readOnly={readOnly}/>
         <div style={{flex:1,overflowX:"auto",overflowY:"hidden",padding:"12px 16px 0",display:"flex",gap:10,alignItems:"stretch",minHeight:0}}>
-          {COLS.filter(col=>!(col.id==="do"&&settings.hideEmptyDo&&visBucket.filter(t=>t.status==="do").length===0)).map(col=>(
-            <Column key={col.id} col={col} boardId={board.id} buckets={buckets} activeTab={activeTab} tasks={visBucket.filter(t=>t.status===col.id)} onEdit={setEditing} onDelete={delTask} onCheck={checkTask} onDuplicate={duplicateTask} onAddTask={addTask} readOnly={readOnly} draggingId={draggingId} celebratingIds={celebratingIds} onDragStart={handleDragStart} onDragOver={()=>{}} onDrop={handleDrop} onDropCol={handleDropCol}/>
+          {COLS.filter(col=>!(col.id==="do"&&settings.hideEmptyDo&&vis.filter(t=>t.status==="do").length===0)).map(col=>(
+            <Column key={col.id} col={col} boardId={board.id} buckets={buckets} activeTab={activeTab} tasks={vis.filter(t=>t.status===col.id)} onEdit={setEditing} onDelete={delTask} onCheck={checkTask} onDuplicate={duplicateTask} onAddTask={addTask} readOnly={readOnly} draggingId={draggingId} celebratingIds={celebratingIds} onDragStart={handleDragStart} onDragOver={()=>{}} onDrop={handleDrop} onDropCol={handleDropCol}/>
           ))}
         </div>
         {!readOnly&&<div style={{padding:"8px 16px",borderTop:`1px solid ${BORDER}`,background:"#000",flexShrink:0,display:"flex",justifyContent:"flex-end"}}>
@@ -3887,19 +3948,20 @@ function MainApp({user,board,allBoards,onSwitchBoard,onBack,onSignOut}){
 
       {viewMode==="cal"&&<div style={{display:"flex",flexDirection:"column",flex:1,minHeight:0}}>
         <QuickAddBar boardId={board.id} onAdd={addTask} onOpenModal={()=>setShowQuickAdd(true)} readOnly={readOnly}/>
-        <HourlyCalendar tasks={tasks} buckets={buckets} onEdit={setEditing} onCheck={checkTask} readOnly={readOnly} celebratingIds={celebratingIds} sb={activeTab==="all"} onAddTask={addTask} hideTimeFrames={settings.hideTimeFrames} dayFilter={dayFilter} activeTab={activeTab} allBuckets={buckets}/>
+        <HourlyCalendar tasks={visBucket} buckets={buckets} onEdit={setEditing} onCheck={checkTask} readOnly={readOnly} celebratingIds={celebratingIds} sb={activeTab==="all"} onAddTask={addTask} hideTimeFrames={settings.hideTimeFrames} dayFilter={dayFilter} activeTab={activeTab} allBuckets={buckets}/>
       </div>}
       {viewMode==="day"&&<DayView tasks={visBucket} buckets={buckets} activeTab={activeTab} onEdit={setEditing} onDelete={delTask} onCheck={checkTask} readOnly={readOnly} celebratingIds={celebratingIds} onAddTask={addTask} boardId={board.id} hideTimeFrames={settings.hideTimeFrames} onOpenModal={()=>setShowQuickAdd(true)}/>}
       {viewMode==="monthly"&&<MonthlyView tasks={tasks} buckets={buckets} onEdit={handleEdit} celebratingIds={celebratingIds}/>}
       {viewMode==="taba"&&<TabataView tasks={tasks} onCheck={checkTask} onEdit={setEditing} celebratingIds={celebratingIds}/>}
       {viewMode==="health"&&<HealthView tasks={tasks} buckets={buckets} onEdit={setEditing} activeTab={activeTab} childBucketIds={childBucketIds}/>}
-      {viewMode==="dash"&&<DashboardView tasks={tasks} buckets={buckets} onEdit={handleEdit} onCheck={checkTask} celebratingIds={celebratingIds} readOnly={readOnly} dayFilter={dayFilter}/>}
+      {viewMode==="dash"&&<DashboardView tasks={visBucket} buckets={buckets} onEdit={handleEdit} onCheck={checkTask} celebratingIds={celebratingIds} readOnly={readOnly} dayFilter={dayFilter}/>}
+      {viewMode==="gameday"&&<GamedayView tasks={visBucket} buckets={buckets} onEdit={handleEdit} onCheck={checkTask} onDelete={delTask} celebratingIds={celebratingIds} readOnly={readOnly} onAddTask={addTask} boardId={board.id}/>}
       {viewMode==="onesies"&&<OnesiesView tasks={visBucket} buckets={buckets} onEdit={handleEdit} onCheck={checkTask} onDelete={delTask} celebratingIds={celebratingIds} readOnly={readOnly} onAddTask={addTask} boardId={board.id}/>}
       {viewMode==="inbox"&&<InboxView tasks={tasks} buckets={buckets} boardId={board.id} onAdd={addTask} onEdit={handleEdit} readOnly={readOnly}/>}
       {viewMode==="ref"&&<RefBoardView tasks={tasks} buckets={buckets} boardId={board.id} onAdd={addTask} onEdit={handleEdit} readOnly={readOnly}/>}
       {viewMode==="list"&&<div style={{display:"flex",flexDirection:"column",flex:1,minHeight:0}}>
         <QuickAddBar boardId={board.id} onAdd={addTask} onOpenModal={()=>setShowQuickAdd(true)} readOnly={readOnly}/>
-        <DurationView tasks={visBucket} buckets={buckets} actions={actions} brands={brands} persons={persons} labels={labels} activeTab={activeTab} onEdit={setEditing} onDelete={delTask} onCheck={checkTask} readOnly={readOnly} celebratingIds={celebratingIds} onAddTask={addTask} boardId={board.id}/>
+        <DurationView tasks={vis} buckets={buckets} actions={actions} brands={brands} persons={persons} labels={labels} activeTab={activeTab} onEdit={setEditing} onDelete={delTask} onCheck={checkTask} readOnly={readOnly} celebratingIds={celebratingIds} onAddTask={addTask} boardId={board.id}/>
       </div>}
 
       <div style={{borderTop:`1px solid ${theme.border}`,background:theme.navBg,flexShrink:0,paddingBottom:"env(safe-area-inset-bottom,0px)"}}>
@@ -3911,6 +3973,7 @@ function MainApp({user,board,allBoards,onSwitchBoard,onBack,onSignOut}){
             {id:"day",icon:"⏱",label:"Timeline"},
             {id:"board",icon:"⊞",label:"Board"},
             {id:"list",icon:"☰",label:"List"},
+            {id:"gameday",icon:"🏈",label:"Gameday"},
             {id:"__search__",icon:"⌕",label:"Search"},
           ].map(v=>{
             const active=v.id==="__search__"?false:viewMode===v.id;
