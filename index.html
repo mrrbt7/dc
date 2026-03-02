@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="theme-color" content="#000000"/>
-<title>MR v3.7</title>
+<title>MR v3.8</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -32,12 +32,19 @@ input,textarea,select{font-size:16px!important}
 .spin{animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 /* Light mode overrides */
-html.light body,html.light #root{background:#f5f5f7;color:#1a1a1a}
-html.light .tab-bar{background:#ffffff}
-html.light .tab-item{background:#f0f0f5;border-color:#d0d5dd;color:#888}
-html.light .tab-item:hover{background:#ffffff;color:#1a1a1a}
-html.light .tab-item.active{background:#ffffff;border-color:#d0d5dd;border-bottom-color:#ffffff}
-html.light .tab-bar-line{background:#d0d5dd}
+html.light .tab-bar{background:#ccdff0}
+html.light .tab-item{background:#d8eaf8;border-color:#a8c4e0;color:#446688}
+html.light .tab-item:hover{background:#c8dff0;color:#0a0a1a}
+html.light .tab-item.active{background:#c0d8ea;border-color:#a8c4e0;border-bottom-color:#c0d8ea;color:#CAFF4C}
+html.light .tab-bar-line{background:#a8c4e0}
+/* === COMPREHENSIVE LIGHT MODE === */
+html.light body,html.light #root{background:#deeaf5;color:#0a0a1a}
+html.light ::-webkit-scrollbar-thumb{background:#a8c4e0}
+html.light ::-webkit-scrollbar-track{background:#deeaf5}
+html.light select option{background:#deeaf5;color:#0a0a1a}
+html.light input,html.light textarea,html.light select{color-scheme:light;background:#e8f2fa!important;color:#0a0a1a!important;border-color:#a8c4e0!important}
+html.light input::placeholder,html.light textarea::placeholder{color:#6688aa!important}
+
 </style>
 </head>
 <body>
@@ -177,7 +184,22 @@ const bLbl={display:"block",fontSize:10,fontWeight:600,color:MUTED,letterSpacing
 const FL=e=>e.target.style.borderColor="#444";
 const FB=e=>e.target.style.borderColor=BORDER;
 
-function Logo({size=24}){return(<div style={{position:"relative",width:size,height:size,flexShrink:0}}><div style={{position:"absolute",inset:0,background:"radial-gradient(circle at 30% 30%,#4ECDC4,#1a4a5c)",borderRadius:size*.25}}/><div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:size*.5,fontWeight:900,color:"#000"}}>D</div></div>);}
+function Logo({size=24}){
+  return(
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{flexShrink:0}}>
+      <defs>
+        <linearGradient id="dcFire" x1="6" y1="22" x2="18" y2="2" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#FF4500"/>
+          <stop offset="45%" stopColor="#FF9F0A"/>
+          <stop offset="100%" stopColor="#CAFF4C"/>
+        </linearGradient>
+      </defs>
+      <rect width="24" height="24" rx="5" fill="#111"/>
+      <path d="M12 2C10 5 7 6 7.5 10C8 13 6 14.5 5 18C7.5 16.5 9 18.5 11 21C12 19 14 20 15 18C16 15 14 13.5 14.5 10C15 6 14 5 12 2Z" fill="url(#dcFire)"/>
+      <path d="M8.5 12.5L11 15.5L16 9.5" stroke="#111" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
 
 function Modal({onClose,children,maxWidth=490}){const{cardBg:mb,border:mbo}=useTheme();return(<div onClick={e=>{if(e.target===e.currentTarget)onClose();}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,.85)",backdropFilter:"blur(6px)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:16}}><div style={{background:mb,borderRadius:16,width:"100%",maxWidth,maxHeight:"93vh",overflow:"auto",border:`1px solid ${mbo}`,boxShadow:"0 32px 80px rgba(0,0,0,.95)"}}>{children}</div></div>);}
 
@@ -1181,8 +1203,8 @@ function MoreMenu({onDelete,onDuplicate}){
 function MoreSection({open,onToggle,fullScreen,children}){
   if(open&&fullScreen){
     return(
-      <div style={{position:"fixed",inset:0,background:"#050505",zIndex:400,display:"flex",flexDirection:"column"}}>
-        <div style={{padding:"12px 16px",borderBottom:`1px solid ${BORDER}`,flexShrink:0,display:"flex",alignItems:"center",gap:8,background:"#0a0a0a"}}>
+      <div style={{position:"fixed",inset:0,background:ec||"#050505",zIndex:400,display:"flex",flexDirection:"column"}}>
+        <div style={{padding:"12px 16px",borderBottom:`1px solid ${eb||BORDER}`,flexShrink:0,display:"flex",alignItems:"center",gap:8,background:ec||"#0a0a0a"}}>
           <button onClick={onToggle} style={{background:"none",border:"none",cursor:"pointer",color:MUTED,fontSize:20,padding:"0 6px 0 0",lineHeight:1}}>‹</button>
           <span style={{fontSize:12,color:MUTED,fontWeight:700,letterSpacing:1,textTransform:"uppercase"}}>More Options</span>
           <div style={{flex:1}}/>
@@ -1197,7 +1219,7 @@ function MoreSection({open,onToggle,fullScreen,children}){
       <button onClick={onToggle} style={{display:"flex",alignItems:"center",gap:7,width:"100%",background:"none",border:`1px solid ${open?"#444":BORDER}`,borderRadius:8,padding:"9px 12px",cursor:"pointer",color:open?TEXT:MUTED,fontSize:12,fontFamily:"inherit",marginBottom:open?10:0,transition:"border-color .15s"}}>
         <span style={{fontSize:11}}>{open?"▾":"▸"}</span>
         <span style={{fontWeight:600,letterSpacing:.5}}>More Options</span>
-        <span style={{marginLeft:"auto",fontSize:10,color:"#333"}}>{open?"collapse":"bucket · freq · link · priority · labels…"}</span>
+        <span style={{marginLeft:"auto",fontSize:10,color:em}}>{open?"collapse":"action · link · priority · labels…"}</span>
       </button>
       {open&&<div style={{padding:"12px",background:"#0a0a0a",borderRadius:8,border:`1px solid ${BORDER}`}}>{children}</div>}
     </div>
@@ -1239,6 +1261,11 @@ function AttachmentsMgr({attachments,readOnly,onChange}){
 }
 
 function EditMdl({task,tasks,buckets,actions,brands,persons,labels,onSave,onClose,onDelete,onDuplicate,onOpenRef,readOnly}){
+  const {border:eb,text:et,muted:em,inp:ei,cardBg:ec,lm:eLm}=useTheme();
+  // Local style overrides — theme-aware
+  const bLbl={display:"block",fontSize:10,fontWeight:600,color:em,letterSpacing:1.2,textTransform:"uppercase",marginBottom:5};
+  const bInp={width:"100%",padding:"9px 11px",borderRadius:8,border:`1px solid ${eb}`,fontSize:13,fontFamily:"inherit",color:et,background:ei,marginBottom:12,boxSizing:"border-box",outline:"none"};
+  const bSel={...{width:"100%",padding:"9px 11px",borderRadius:8,border:`1px solid ${eb}`,fontSize:13,fontFamily:"inherit",color:et,background:ei,marginBottom:12,boxSizing:"border-box",outline:"none"},cursor:"pointer"};
   const [f,setF]=useState({...task,completionLog:task.completionLog||[],bucketId:task.bucketId||null,duration:task.duration||"",time:task.time||"",link:task.link||"",attachments:task.attachments||[],priority:task.priority||"normal",eventDate:task.eventDate||"",action:task.action||"",brand:task.brand||"",gameday:task.gameday||"",person:task.person||"",labels:task.labels||[],keepLink:task.keepLink||"",notifyMins:task.notifyMins!=null?task.notifyMins:null});
   const [editingLink,setEditingLink]=useState(false);
   const [showMore,setShowMore]=useState(false);
@@ -1259,12 +1286,12 @@ function EditMdl({task,tasks,buckets,actions,brands,persons,labels,onSave,onClos
   const hasLink=f.link&&f.link.trim();
   const selS={...bSel,marginBottom:12};
   return(
-    <Modal onClose={onClose}>
+    <Modal onClose={onClose} maxWidth={9999}>
       <div style={{padding:"16px 16px 0"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
           <div style={{flex:1,minWidth:0,paddingRight:8}}>
             {!readOnly
-              ?<input value={f.title} onChange={e=>{const v=e.target.value;setF(x=>({...x,title:v,priority:v.includes("🚨")?"high":x.priority==="high"&&!v.includes("🚨")?"normal":x.priority}));}} style={{width:"100%",fontSize:18,fontWeight:800,color:TEXT,background:"transparent",border:"none",borderBottom:`1px solid ${BORDER}`,outline:"none",fontFamily:"inherit",lineHeight:1.3,marginBottom:6,padding:"0 0 4px",boxSizing:"border-box"}} placeholder="Task title…" onFocus={FL} onBlur={FB}/>
+              ?<input value={f.title} onChange={e=>{const v=e.target.value;setF(x=>({...x,title:v,priority:v.includes("🚨")?"high":x.priority==="high"&&!v.includes("🚨")?"normal":x.priority}));}} style={{width:"100%",fontSize:18,fontWeight:800,color:et,background:"transparent",border:"none",borderBottom:`1px solid ${eb}`,outline:"none",fontFamily:"inherit",lineHeight:1.3,marginBottom:6,padding:"0 0 4px",boxSizing:"border-box"}} placeholder="Task title…" onFocus={FL} onBlur={FB}/>
               :<div style={{fontWeight:800,fontSize:18,color:TEXT,lineHeight:1.3,marginBottom:6,paddingBottom:4}}>{f.title||<span style={{color:MUTED,fontStyle:"italic"}}>Untitled</span>}</div>
             }
             <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
@@ -1274,11 +1301,8 @@ function EditMdl({task,tasks,buckets,actions,brands,persons,labels,onSave,onClos
             </div>
           </div>
           <div style={{display:"flex",gap:5,alignItems:"center",flexShrink:0}}>
-            {!readOnly&&<select value={f.status} onChange={e=>set("status",e.target.value)} style={{padding:"4px 7px",borderRadius:6,border:`1px solid ${BORDER}`,background:"#1a1a1a",color:COLS.find(c=>c.id===f.status)?.accent||MUTED,fontSize:11,fontFamily:"inherit",cursor:"pointer",outline:"none",fontWeight:700}}>
-              {COLS.map(c=><option key={c.id} value={c.id}>{c.label}</option>)}
-            </select>}
             {!readOnly&&<MoreMenu onDelete={()=>onDelete(task.id)} onDuplicate={onDuplicate?()=>{onDuplicate(task);onClose();}:undefined}/>}
-            <button onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",fontSize:16,color:MUTED}}>✕</button>
+            <button onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",fontSize:16,color:em}}>✕</button>
           </div>
         </div>
         {!readOnly&&<div style={{display:"flex",gap:8,marginBottom:14}}>
@@ -1319,43 +1343,53 @@ function EditMdl({task,tasks,buckets,actions,brands,persons,labels,onSave,onClos
         <label style={bLbl}>Notes</label>
         <TaskNotesField notes={f.notes||""} readOnly={readOnly} onChange={v=>set("notes",v)}/>
 
-        {/* Compact: Due Date + Time */}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
+        {/* Date + Time + Status */}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:8}}>
           <div>
             <label style={bLbl}>Due Date</label>
-            <input type="date" value={f.dueDate||""} onChange={e=>set("dueDate",e.target.value)} disabled={readOnly} style={{...bInp,colorScheme:"dark",marginBottom:0,fontSize:11}}/>
+            <input type="date" value={f.dueDate||""} onChange={e=>set("dueDate",e.target.value)} disabled={readOnly} style={{...bInp,colorScheme:eLm?"light":"dark",marginBottom:0,fontSize:11}}/>
           </div>
           <div>
             <label style={bLbl}>Time</label>
-            <input type="time" value={f.time||""} onChange={e=>set("time",e.target.value)} disabled={readOnly} style={{...bInp,colorScheme:"dark",marginBottom:0,fontSize:11}}/>
+            <input type="time" value={f.time||""} onChange={e=>set("time",e.target.value)} disabled={readOnly} style={{...bInp,colorScheme:eLm?"light":"dark",marginBottom:0,fontSize:11}}/>
+          </div>
+          <div>
+            <label style={bLbl}>Status</label>
+            {!readOnly?<select value={f.status} onChange={e=>set("status",e.target.value)} style={{...bSel,marginBottom:0,color:COLS.find(c=>c.id===f.status)?.accent||em,fontWeight:700}}>
+              {COLS.map(c=><option key={c.id} value={c.id}>{c.label}</option>)}
+            </select>:<div style={{fontSize:12,color:COLS.find(c=>c.id===f.status)?.accent||em,fontWeight:700,padding:"9px 0"}}>{COLS.find(c=>c.id===f.status)?.label||f.status}</div>}
+          </div>
+        </div>
+        {/* Bucket + Duration + Frequency */}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:12}}>
+          <div>
+            <label style={bLbl}>Bucket</label>
+            <select value={f.bucketId||""} onChange={e=>set("bucketId",e.target.value||null)} disabled={readOnly} style={{...bSel,marginBottom:0}}>
+              <option value="">None</option>
+              {[...buckets].sort((a,b)=>a.label.localeCompare(b.label)).map(b=><option key={b.id} value={b.id}>{b.emoji} {b.label}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={bLbl}>Duration (min)</label>
+            <input type="number" min="1" value={f.duration} onChange={e=>set("duration",e.target.value)} disabled={readOnly} placeholder="30" style={{...bInp,marginBottom:0}} onFocus={FL} onBlur={FB}/>
+          </div>
+          <div>
+            <label style={bLbl}>Frequency</label>
+            <input value={f.frequency} onChange={e=>setFreq(e.target.value)} disabled={readOnly} placeholder="# or word" style={{...bInp,marginBottom:0,fontSize:11}} onFocus={FL} onBlur={FB}/>
+            {fp.type&&<div style={{fontSize:9,color:"#4ECDC4",marginTop:2}}>→ {fp.label}</div>}
           </div>
         </div>
 
         {/* ── More Section ── */}
         <MoreSection open={showMore} onToggle={()=>setShowMore(o=>!o)} fullScreen={true}>
-          {/* Bucket + Action */}
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
-            <div>
-              <label style={bLbl}>Bucket</label>
-              <select value={f.bucketId||""} onChange={e=>set("bucketId",e.target.value||null)} disabled={readOnly} style={{...bSel,marginBottom:0}}>
-                <option value="">None</option>
-                {[...buckets].sort((a,b)=>a.label.localeCompare(b.label)).map(b=><option key={b.id} value={b.id}>{b.emoji} {b.label}</option>)}
-              </select>
-            </div>
-            <div>
-              <label style={bLbl}>Action</label>
-              <select value={f.action||""} onChange={e=>set("action",e.target.value)} disabled={readOnly} style={{...bSel,marginBottom:0}}>
-                <option value="">None</option>
-                {[...(actions||DEFAULT_ACTIONS)].sort((a,b)=>a.label.localeCompare(b.label)).map(a=><option key={a.id} value={a.label}>{a.emoji} {a.label}</option>)}
-                {f.action&&!(actions||DEFAULT_ACTIONS).find(a=>a.label===f.action)&&<option value={f.action}>{f.action}</option>}
-              </select>
-            </div>
-          </div>
-          {/* Frequency */}
+          {/* Action */}
           <div style={{marginBottom:12}}>
-            <label style={bLbl}>Frequency</label>
-            <input value={f.frequency} onChange={e=>setFreq(e.target.value)} disabled={readOnly} placeholder="# or word" style={{...bInp,marginBottom:0,fontSize:11}} onFocus={FL} onBlur={FB}/>
-            {fp.type&&<div style={{fontSize:9,color:"#4ECDC4",marginTop:2}}>→ {fp.label}</div>}
+            <label style={bLbl}>Action</label>
+            <select value={f.action||""} onChange={e=>set("action",e.target.value)} disabled={readOnly} style={{...bSel,marginBottom:0}}>
+              <option value="">None</option>
+              {[...(actions||DEFAULT_ACTIONS)].sort((a,b)=>a.label.localeCompare(b.label)).map(a=><option key={a.id} value={a.label}>{a.emoji} {a.label}</option>)}
+              {f.action&&!(actions||DEFAULT_ACTIONS).find(a=>a.label===f.action)&&<option value={f.action}>{f.action}</option>}
+            </select>
           </div>
           {/* Link + Keep */}
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
@@ -1382,18 +1416,12 @@ function EditMdl({task,tasks,buckets,actions,brands,persons,labels,onSave,onClos
             <button onClick={()=>{if(canU)set("manualOrder",(taskCol[idx-1].manualOrder||0)-1);}} disabled={!canU} style={{background:canU?"#2a2a2a":"#1a1a1a",border:"none",borderRadius:4,width:28,height:22,cursor:canU?"pointer":"default",color:canU?TEXT:"#2a2a2a",fontSize:11,display:"flex",alignItems:"center",justifyContent:"center"}}>▲</button>
             <button onClick={()=>{if(canD)set("manualOrder",(taskCol[idx+1].manualOrder||0)+1);}} disabled={!canD} style={{background:canD?"#2a2a2a":"#1a1a1a",border:"none",borderRadius:4,width:28,height:22,cursor:canD?"pointer":"default",color:canD?TEXT:"#2a2a2a",fontSize:11,display:"flex",alignItems:"center",justifyContent:"center"}}>▼</button>
           </div>}
-          {/* Priority + Duration */}
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
-            <div>
-              <label style={bLbl}>Priority</label>
-              <select value={f.priority} onChange={e=>set("priority",e.target.value)} disabled={readOnly} style={{...selS,marginBottom:0}}>
-                {PRIORITIES.map(p=><option key={p.id} value={p.id}>{p.label}</option>)}
-              </select>
-            </div>
-            <div>
-              <label style={bLbl}>Duration (min)</label>
-              <input type="number" min="1" value={f.duration} onChange={e=>set("duration",e.target.value)} disabled={readOnly} placeholder="30" style={{...bInp,marginBottom:0}} onFocus={FL} onBlur={FB}/>
-            </div>
+          {/* Priority */}
+          <div style={{marginBottom:12}}>
+            <label style={bLbl}>Priority</label>
+            <select value={f.priority} onChange={e=>set("priority",e.target.value)} disabled={readOnly} style={{...selS,marginBottom:0}}>
+              {PRIORITIES.map(p=><option key={p.id} value={p.id}>{p.label}</option>)}
+            </select>
           </div>
 
           <div>
@@ -1475,7 +1503,7 @@ function EditMdl({task,tasks,buckets,actions,brands,persons,labels,onSave,onClos
         })()}
       </div>
       <div style={{padding:"12px 16px 16px",display:"flex",gap:8,justifyContent:"flex-end",borderTop:`1px solid ${BORDER}`,flexWrap:"wrap"}}>
-        <button onClick={onClose} style={{padding:"8px 16px",borderRadius:8,border:`1px solid ${BORDER}`,background:CARD_BG,cursor:"pointer",color:MUTED,fontFamily:"inherit",fontSize:12}}>Cancel</button>
+        <button onClick={onClose} style={{padding:"8px 16px",borderRadius:8,border:`1px solid ${eb}`,background:ec,cursor:"pointer",color:em,fontFamily:"inherit",fontSize:12}}>Cancel</button>
         {!readOnly&&<button onClick={()=>{
   const fp=parseFreq(f.frequency);
   const finalF={...f};
@@ -1506,7 +1534,7 @@ function TaskCard({task,buckets,onEdit,onDelete,onCheck,onDuplicate,showBucket,o
   const dl=task.dueDate?dueLabel(task.dueDate):null;
   const hideTodayFlag=hideToday||(hideTime&&task.time&&daysDiff(task.dueDate||"9999-01-01")===0);
   const dlShow=dl&&!(hideTodayFlag&&dl.color===LIME&&task.dueDate&&daysDiff(task.dueDate)===0)?dl:null;
-  const {cardBg:tcBg,border:tcBorder,text:tcText,muted:tcMuted,showActionTag:sAT,showBucketColor:sBktCol,showCardBg:sCardBg,showDuration:sDur,showFrequency:sFreq}=useTheme();
+  const {cardBg:tcBg,border:tcBorder,text:tcText,muted:tcMuted,showActionTag:sAT,showBucketColor:sBktCol,showCardBg:sCardBg,showDuration:sDur,showFrequency:sFreq,lm:tcLm}=useTheme();
   const bkt=buckets.find(b=>b.id===task.bucketId);
   const fl=freqLabel(task.frequency);
   const _deltaTally=task.frequency&&!isNaN(parseInt((task.frequency||"").trim()))?taskDeltaTally(task):null;
@@ -1521,7 +1549,7 @@ function TaskCard({task,buckets,onEdit,onDelete,onCheck,onDuplicate,showBucket,o
   const bktMainColor=bkt?.mainColor||null;
   const bktBgColor=bkt?.bgColor||null;
   const celebrating_=celebrating;
-  const bgActual=(bktBgColor&&sCardBg)?bktBgColor+"22":null;
+  const bgActual=(bktBgColor&&sCardBg)?(tcLm?bktBgColor+"55":bktBgColor+"22"):null;
   const isLight=bktBgColor?hexLum(bktBgColor)<0.3:false;
   const hasCover=!!(task.attachments&&task.attachments.length>0&&task.attachments.some(a=>/\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(a.url)));
   const cardBg=celebrating_?"#0d2a0d":isDone?"#0a120a":hasCover?"transparent":bgActual?bgActual:tcBg;
@@ -3247,6 +3275,7 @@ function SearchMdl({tasks,boards,allMode,onSelectTask,onClose}){
 }
 
 function DayFilterDropdown({value,onChange}){
+  const {border:dBo,text:dTx,muted:dMu,inp:dIn,lm:dLm}=useTheme();
   const [open,setOpen]=useState(false);
   const ref=useRef();
   useEffect(()=>{
@@ -3278,18 +3307,18 @@ function DayFilterDropdown({value,onChange}){
   return(
     <div ref={ref} style={{position:"relative"}}>
       <button onClick={()=>setOpen(o=>!o)}
-        style={{display:"flex",alignItems:"center",gap:7,padding:"5px 10px",borderRadius:8,border:`1px solid ${open?"#444":BORDER}`,background:"#111",cursor:"pointer",color:TEXT,fontFamily:"inherit",fontSize:12,minWidth:90,justifyContent:"space-between"}}>
+        style={{display:"flex",alignItems:"center",gap:7,padding:"5px 10px",borderRadius:8,border:`1px solid ${open?dBo:dBo}`,background:dIn,cursor:"pointer",color:dTx,fontFamily:"inherit",fontSize:12,minWidth:90,justifyContent:"space-between"}}>
         <span style={{fontWeight:600,maxWidth:110,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{active.label||"Today"}</span>
-        <span style={{fontSize:9,color:MUTED,marginLeft:4}}>{open?"▲":"▼"}</span>
+        <span style={{fontSize:9,color:dMu,marginLeft:4}}>{open?"▲":"▼"}</span>
       </button>
       {open&&(
-        <div style={{position:"absolute",top:"calc(100% + 6px)",right:0,background:"#111",border:"1px solid #444",borderRadius:10,overflow:"hidden",zIndex:200,minWidth:180,boxShadow:"0 8px 32px rgba(0,0,0,.8)"}}>
+        <div style={{position:"absolute",top:"calc(100% + 6px)",right:0,background:dIn,border:`1px solid ${dBo}`,borderRadius:10,overflow:"hidden",zIndex:200,minWidth:180,boxShadow:"0 8px 32px rgba(0,0,0,.8)"}}>
           {OPTS.map((opt,i)=>{
-            if(opt.id==="__sep__")return <div key="sep" style={{height:1,background:"#222",margin:"4px 0"}}/>;
+            if(opt.id==="__sep__")return <div key="sep" style={{height:1,background:dBo,margin:"4px 0"}}/>;
             const sel=opt.id===value;
             return(
               <button key={opt.id} onClick={()=>{onChange(opt.id);setOpen(false);}}
-                style={{display:"flex",alignItems:"center",width:"100%",padding:"9px 14px",background:sel?"#1a1a1a":"transparent",border:"none",cursor:"pointer",color:sel?LIME:TEXT,fontFamily:"inherit",fontSize:12,textAlign:"left",borderLeft:sel?`2px solid ${LIME}`:"2px solid transparent"}}
+                style={{display:"flex",alignItems:"center",width:"100%",padding:"9px 14px",background:sel?dBo:"transparent",border:"none",cursor:"pointer",color:sel?LIME:dTx,fontFamily:"inherit",fontSize:12,textAlign:"left",borderLeft:sel?`2px solid ${LIME}`:"2px solid transparent"}}
                 onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#1a1a1a";}}
                 onMouseLeave={e=>{if(!sel)e.currentTarget.style.background="transparent";}}>
                 <span style={{flex:1,fontWeight:sel?700:400}}>{opt.label}</span>
@@ -3304,42 +3333,46 @@ function DayFilterDropdown({value,onChange}){
 }
 
 function BucketDropdown({tabs,activeTab,onSelect}){
+  const {border:bBo,text:bTx,muted:bMu,inp:bIn,lm:bLm}=useTheme();
   const [open,setOpen]=useState(false);
   const ref=useRef();
   useEffect(()=>{
     const h=e=>{if(ref.current&&!ref.current.contains(e.target))setOpen(false);};
     document.addEventListener("mousedown",h);return()=>document.removeEventListener("mousedown",h);
   },[]);
-  // ALL first, then rest sorted alpha
+  // ALL first, then sorted alpha, NO BUCKET last
   const allTab=tabs.find(t=>t.id==="all");
-  const restTabs=[...tabs.filter(t=>t.id!=="all")].sort((a,b)=>a.label.localeCompare(b.label));
-  const orderedTabs=allTab?[allTab,...restTabs]:restTabs;
+  const noBktTab=tabs.find(t=>t.id==="__nobudget__");
+  const restTabs=[...tabs.filter(t=>t.id!=="all"&&t.id!=="__nobudget__")].sort((a,b)=>a.label.localeCompare(b.label));
+  const orderedTabs=[...(allTab?[allTab]:[]),...restTabs,...(noBktTab?[noBktTab]:[])];
   const active=tabs.find(t=>t.id===activeTab)||orderedTabs[0];
   if(!active)return null;
   const isAll=active.id==="all";
   return(
     <div ref={ref} style={{position:"relative"}}>
       <button onClick={()=>setOpen(o=>!o)}
-        style={{display:"flex",alignItems:"center",gap:7,padding:"5px 10px",borderRadius:8,border:`1px solid ${open?"#444":BORDER}`,background:"#111",cursor:"pointer",color:TEXT,fontFamily:"inherit",fontSize:12,minWidth:90,justifyContent:"space-between"}}>
+        style={{display:"flex",alignItems:"center",gap:7,padding:"5px 10px",borderRadius:8,border:`1px solid ${bBo}`,background:bIn,cursor:"pointer",color:bTx,fontFamily:"inherit",fontSize:12,minWidth:90,justifyContent:"space-between"}}>
         <span style={{display:"flex",alignItems:"center",gap:6}}>
           {!isAll&&active.color&&<span style={{width:8,height:8,borderRadius:"50%",background:active.color,flexShrink:0,display:"inline-block"}}/>}
           {!isAll&&<span style={{fontSize:15}}>{active.emoji}</span>}
           <span style={{fontWeight:600,maxWidth:110,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{active.label}</span>
         </span>
-        <span style={{fontSize:9,color:MUTED,marginLeft:4}}>{open?"▲":"▼"}</span>
+        <span style={{fontSize:9,color:bMu,marginLeft:4}}>{open?"▲":"▼"}</span>
       </button>
       {open&&(
-        <div style={{position:"absolute",top:"calc(100% + 6px)",right:0,background:"#111",border:`1px solid #444`,borderRadius:10,overflow:"hidden",zIndex:200,minWidth:170,boxShadow:"0 8px 32px rgba(0,0,0,.8)"}}>
+        <div style={{position:"absolute",top:"calc(100% + 6px)",right:0,background:bIn,border:`1px solid ${bBo}`,borderRadius:10,overflow:"hidden",zIndex:200,minWidth:170,boxShadow:"0 8px 32px rgba(0,0,0,.8)"}}>
           {orderedTabs.map(tab=>{
             const sel=tab.id===activeTab;
             const isAllTab=tab.id==="all";
+            const isNoBkt=tab.id==="__nobudget__";
             return(
               <button key={tab.id} onClick={()=>{onSelect(tab.id);setOpen(false);}}
-                style={{display:"flex",alignItems:"center",gap:9,width:"100%",padding:"10px 14px",background:sel?"#1a1a1a":"transparent",border:"none",cursor:"pointer",color:sel?TEXT:MUTED,fontFamily:"inherit",fontSize:13,textAlign:"left",borderLeft:sel?`2px solid ${LIME}`:"2px solid transparent"}}
-                onMouseEnter={e=>{if(!sel)e.currentTarget.style.background="#1a1a1a";}}
+                style={{display:"flex",alignItems:"center",gap:9,width:"100%",padding:"10px 14px",background:sel?bBo:"transparent",border:"none",cursor:"pointer",color:sel?bTx:bMu,fontFamily:"inherit",fontSize:13,textAlign:"left",borderLeft:sel?`2px solid ${LIME}`:"2px solid transparent",borderTop:isNoBkt?`1px solid ${bBo}`:"none"}}
+                onMouseEnter={e=>{if(!sel)e.currentTarget.style.background=bBo;}}
                 onMouseLeave={e=>{if(!sel)e.currentTarget.style.background="transparent";}}>
-                {!isAllTab&&tab.color&&<span style={{width:8,height:8,borderRadius:"50%",background:tab.color,flexShrink:0}}/>}
-                {!isAllTab&&<span style={{fontSize:15}}>{tab.emoji}</span>}
+                {!isAllTab&&!isNoBkt&&tab.color&&<span style={{width:8,height:8,borderRadius:"50%",background:tab.color,flexShrink:0}}/>}
+                {!isAllTab&&!isNoBkt&&<span style={{fontSize:15}}>{tab.emoji}</span>}
+                {isNoBkt&&<span style={{fontSize:13,opacity:.6}}>∅</span>}
                 <span style={{fontWeight:sel?700:400}}>{tab.label}</span>
                 {sel&&<span style={{marginLeft:"auto",color:LIME,fontSize:12}}>✓</span>}
               </button>
@@ -3878,7 +3911,8 @@ function MainApp({user,board,allBoards,onSwitchBoard,onBack,onSignOut}){
   const vis=tasks.filter(t=>{
     if(t.isRef)return false;
     if(hiddenBucketIds.size>0&&t.bucketId&&hiddenBucketIds.has(t.bucketId))return false;
-    if(activeTab!=="all"&&t.bucketId!==activeTab&&!childBucketIds.includes(t.bucketId))return false;
+    if(activeTab==="__nobudget__"){if(t.bucketId)return false;}
+    else if(activeTab!=="all"&&t.bucketId!==activeTab&&!childBucketIds.includes(t.bucketId))return false;
     if(dayFilter==="alltasks")return true;
     if(!t.dueDate){return dayFilter==="nodate";}
     if(dayFilter==="nodate")return false;
@@ -3895,21 +3929,23 @@ function MainApp({user,board,allBoards,onSwitchBoard,onBack,onSignOut}){
   const visBucket=tasks.filter(t=>{
     if(t.isRef)return false;
     if(hiddenBucketIds.size>0&&t.bucketId&&hiddenBucketIds.has(t.bucketId))return false;
-    if(activeTab!=="all"&&t.bucketId!==activeTab&&!childBucketIds.includes(t.bucketId))return false;
+    if(activeTab==="__nobudget__"){if(t.bucketId)return false;}
+    else if(activeTab!=="all"&&t.bucketId!==activeTab&&!childBucketIds.includes(t.bucketId))return false;
     return true;
   });
   const oCt=tasks.filter(t=>t.dueDate&&daysDiff(t.dueDate)<0).length;
   const tCt=tasks.filter(t=>t.dueDate&&daysDiff(t.dueDate)===0).length;
   const visibleBuckets=buckets.filter(b=>!b.hidden);
-  const tabs=[{id:"all",emoji:"",label:"ALL",color:null},...visibleBuckets.map(b=>({id:b.id,emoji:b.emoji,label:b.label,color:b.color||null}))];
+  const tabs=[{id:"all",emoji:"",label:"ALL",color:null},...visibleBuckets.map(b=>({id:b.id,emoji:b.emoji,label:b.label,color:b.color||null})),{id:"__nobudget__",emoji:"∅",label:"No Bucket",color:null}];
   const VIEWS=[{id:"inbox",icon:"⊟",label:"Inbox"},{id:"cal",icon:"▦",label:"Cal"},{id:"day",icon:"⏱",label:"Timeline"},{id:"board",icon:"⊞",label:"Board"},{id:"list",icon:"☰",label:"List"},{id:"health",icon:"⬡",label:"Health"},{id:"ref",icon:"⊟",label:"Ref"}];
 
-  if(loading)return(<div style={{height:"100%",display:"flex",alignItems:"center",justifyContent:"center",background:"#000",flexDirection:"column",gap:12}}><Logo size={36}/><div className="spin" style={{width:20,height:20,border:`2px solid ${BORDER}`,borderTopColor:LIME,borderRadius:"50%"}}/><div style={{fontSize:12,color:MUTED}}>Loading {board.name}…</div></div>);
+  useEffect(()=>{document.documentElement.classList.toggle("light",!!settings.lightMode);},[settings.lightMode]);
+  if(loading)return(<div style={{height:"100%",display:"flex",alignItems:"center",justifyContent:"center",background:!!settings.lightMode?"#deeaf5":"#000",flexDirection:"column",gap:12}}><Logo size={36}/><div className="spin" style={{width:20,height:20,border:`2px solid ${BORDER}`,borderTopColor:LIME,borderRadius:"50%"}}/><div style={{fontSize:12,color:MUTED}}>Loading {board.name}…</div></div>);
 
   const lm=!!settings.lightMode;
   const _tVars=lm?{
-    bg:"#3c3c40",navBg:"#2e2e33",cardBg:"#f2f2f7",col:"#e8e8ed",border:"#c0c0c8",
-    text:"#1a1a1a",muted:"#666",inp:"#e0e0e8"
+    bg:"#deeaf5",navBg:"#ccdff0",cardBg:"#ffffff",col:"#e0edf8",border:"#a8c4e0",
+    text:"#0a0a1a",muted:"#446688",inp:"#e8f2fa"
   }:{
     bg:"#000",navBg:"#000",cardBg:"#1c1c1e",col:"#111",border:"#2a2a2a",
     text:"#e8e8e8",muted:"#555",inp:"#1a1a1a"
@@ -3927,10 +3963,10 @@ function MainApp({user,board,allBoards,onSwitchBoard,onBack,onSignOut}){
       <div style={{background:theme.navBg,borderBottom:`1px solid ${theme.border}`,padding:"0 16px",flexShrink:0}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",height:46}}>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
-            <button onClick={()=>setShowSidebar(true)} style={{background:"none",border:"none",cursor:"pointer",color:MUTED,fontSize:18,padding:"0 6px",lineHeight:1,display:"flex",alignItems:"center"}} onMouseEnter={e=>e.currentTarget.style.color=TEXT} onMouseLeave={e=>e.currentTarget.style.color=MUTED}>☰</button>
+            <button onClick={()=>setShowSidebar(true)} style={{background:"none",border:"none",cursor:"pointer",color:theme.muted,fontSize:18,padding:"0 6px",lineHeight:1,display:"flex",alignItems:"center"}} onMouseEnter={e=>e.currentTarget.style.color=theme.text} onMouseLeave={e=>e.currentTarget.style.color=theme.muted}>☰</button>
             <Logo size={22}/>
             <div>
-              <div style={{display:"flex",alignItems:"center",gap:6}}><div onClick={()=>setViewMode("dash")} style={{fontWeight:800,fontSize:13,letterSpacing:-.5,display:"flex",alignItems:"center",gap:5,cursor:"pointer"}} onMouseEnter={e=>e.currentTarget.style.opacity=.75} onMouseLeave={e=>e.currentTarget.style.opacity=1} title="Dashboard"><span style={{fontSize:15}}>{board.emoji}</span>{board.name}</div>{allBoards&&allBoards.length>1&&<div style={{display:"flex",gap:3}}>{allBoards.map(b=><div key={b.id} onClick={()=>onSwitchBoard&&onSwitchBoard(b)} title={b.name} style={{width:6,height:6,borderRadius:"50%",background:b.id===board.id?LIME:"#333",cursor:"pointer",flexShrink:0,transition:"background .15s"}} onMouseEnter={e=>e.currentTarget.style.background=b.id===board.id?LIME:"#666"} onMouseLeave={e=>e.currentTarget.style.background=b.id===board.id?LIME:"#333"}/>)}</div>}</div>
+              <div style={{display:"flex",alignItems:"center",gap:6}}><div onClick={()=>setViewMode("dash")} style={{fontWeight:800,fontSize:13,letterSpacing:-.5,display:"flex",alignItems:"center",gap:5,cursor:"pointer",color:theme.text}} onMouseEnter={e=>e.currentTarget.style.opacity=.75} onMouseLeave={e=>e.currentTarget.style.opacity=1} title="Dashboard"><span style={{fontSize:15}}>{board.emoji}</span>{board.name}</div>{allBoards&&allBoards.length>1&&<div style={{display:"flex",gap:3}}>{allBoards.map(b=><div key={b.id} onClick={()=>onSwitchBoard&&onSwitchBoard(b)} title={b.name} style={{width:6,height:6,borderRadius:"50%",background:b.id===board.id?LIME:"#333",cursor:"pointer",flexShrink:0,transition:"background .15s"}} onMouseEnter={e=>e.currentTarget.style.background=b.id===board.id?LIME:"#666"} onMouseLeave={e=>e.currentTarget.style.background=b.id===board.id?LIME:"#333"}/>)}</div>}</div>
               {syncing&&<div style={{fontSize:8,color:"#30D158",letterSpacing:1,textTransform:"uppercase"}}>SYNCING…</div>}
             </div>
           </div>
@@ -3994,7 +4030,7 @@ function MainApp({user,board,allBoards,onSwitchBoard,onBack,onSignOut}){
             return(
               <button key={v.id}
                 onClick={()=>v.id==="__search__"?setShowSearch(true):setViewMode(v.id)}
-                style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,background:"none",border:"none",cursor:"pointer",color:active?LIME:MUTED,borderTop:active?`2px solid ${LIME}`:"2px solid transparent",transition:"color .15s,border-color .15s",padding:"6px 2px 4px"}}>
+                style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,background:"none",border:"none",cursor:"pointer",color:active?LIME:theme.muted,borderTop:active?`2px solid ${LIME}`:"2px solid transparent",transition:"color .15s,border-color .15s",padding:"6px 2px 4px"}}>
                 <span style={{fontSize:16,lineHeight:1}}>{v.icon}</span>
                 <span style={{fontSize:7.5,letterSpacing:.4,fontWeight:active?700:400,textTransform:"uppercase"}}>{v.label}</span>
               </button>
