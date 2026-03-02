@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="theme-color" content="#000000"/>
-<title>MR v3.8</title>
+<title>MR v3.9</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -38,6 +38,11 @@ html.light .tab-item:hover{background:#c8dff0;color:#0a0a1a}
 html.light .tab-item.active{background:#c0d8ea;border-color:#a8c4e0;border-bottom-color:#c0d8ea;color:#CAFF4C}
 html.light .tab-bar-line{background:#a8c4e0}
 /* === COMPREHENSIVE LIGHT MODE === */
+/* Manager modal inner rows */
+html.light [style*="background:#0a0a0a"]{background:#e8f2fa!important}
+html.light [style*="background: #0a0a0a"]{background:#e8f2fa!important}
+html.light [style*='background:"#0a0a0a"']{background:#e8f2fa!important}
+
 html.light body,html.light #root{background:#deeaf5;color:#0a0a1a}
 html.light ::-webkit-scrollbar-thumb{background:#a8c4e0}
 html.light ::-webkit-scrollbar-track{background:#deeaf5}
@@ -65,7 +70,7 @@ const GAMEDAY_OPTS=["","GAMEDAY","DAY BEFORE GD","2 DAYS BEFORE GD","3 DAYS BEFO
 const DEFAULT_ACTIONS=[{id:"buy",emoji:"🛒",label:"Buy"},{id:"call",emoji:"📞",label:"Call"},{id:"email",emoji:"📧",label:"Email"},{id:"research",emoji:"🔍",label:"Research"},{id:"review",emoji:"👁",label:"Review"},{id:"schedule",emoji:"📅",label:"Schedule"},{id:"watch",emoji:"👀",label:"Watch"},{id:"read",emoji:"📖",label:"Read"},{id:"fix",emoji:"🔧",label:"Fix"},{id:"build",emoji:"🏗",label:"Build"},{id:"plan",emoji:"📋",label:"Plan"},{id:"pay",emoji:"💳",label:"Pay"}];
 const WDN=["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
 const WDL=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-const DEF_SETTINGS={hideEmptyDo:false,defaultView:'dash',lightMode:false,dayStartTime:'00:30',hideTimeFrames:false,showActionTag:false,showBucketColor:true,showCardBg:true,showDuration:true,showFrequency:true};
+const DEF_SETTINGS={hideEmptyDo:false,defaultView:'dash',lightMode:false,dayStartTime:'00:30',hideTimeFrames:false,showActionTag:false,showBucketColor:true,showCardBg:true,showDuration:true,showFrequency:true,hideMundane:false};
 // Eastern time with configurable day-start rollover
 const etNow=()=>{
   const now=new Date();
@@ -994,6 +999,8 @@ function DisplayMdl({settings,onChange,onClose}){
         {row("SHOW card background","showCardBg")}
         {row("SHOW duration","showDuration")}
         {row("SHOW frequency","showFrequency")}
+        {sec("FILTERS")}
+        {row("HIDE mundane tasks","hideMundane")}
         {sec("TIMELINE VIEW")}
         {rowInv("SHOW time frames","hideTimeFrames")}
         {sec("THEME")}
@@ -1201,14 +1208,15 @@ function MoreMenu({onDelete,onDuplicate}){
 }
 
 function MoreSection({open,onToggle,fullScreen,children}){
+  const {cardBg:msCard,border:msBo,muted:msMu}=useTheme();
   if(open&&fullScreen){
     return(
-      <div style={{position:"fixed",inset:0,background:ec||"#050505",zIndex:400,display:"flex",flexDirection:"column"}}>
-        <div style={{padding:"12px 16px",borderBottom:`1px solid ${eb||BORDER}`,flexShrink:0,display:"flex",alignItems:"center",gap:8,background:ec||"#0a0a0a"}}>
-          <button onClick={onToggle} style={{background:"none",border:"none",cursor:"pointer",color:MUTED,fontSize:20,padding:"0 6px 0 0",lineHeight:1}}>‹</button>
-          <span style={{fontSize:12,color:MUTED,fontWeight:700,letterSpacing:1,textTransform:"uppercase"}}>More Options</span>
+      <div style={{position:"fixed",inset:0,background:msCard,zIndex:400,display:"flex",flexDirection:"column"}}>
+        <div style={{padding:"12px 16px",borderBottom:`1px solid ${msBo}`,flexShrink:0,display:"flex",alignItems:"center",gap:8,background:msCard}}>
+          <button onClick={onToggle} style={{background:"none",border:"none",cursor:"pointer",color:msMu,fontSize:20,padding:"0 6px 0 0",lineHeight:1}}>‹</button>
+          <span style={{fontSize:12,color:msMu,fontWeight:700,letterSpacing:1,textTransform:"uppercase"}}>More Options</span>
           <div style={{flex:1}}/>
-          <button onClick={onToggle} style={{background:"none",border:`1px solid ${BORDER}`,borderRadius:6,padding:"4px 12px",cursor:"pointer",color:MUTED,fontSize:12,fontFamily:"inherit"}}>Done</button>
+          <button onClick={onToggle} style={{background:"none",border:`1px solid ${msBo}`,borderRadius:6,padding:"4px 12px",cursor:"pointer",color:msMu,fontSize:12,fontFamily:"inherit"}}>Done</button>
         </div>
         <div style={{flex:1,overflowY:"auto",padding:"16px 18px 40px"}}>{children}</div>
       </div>
@@ -1219,7 +1227,7 @@ function MoreSection({open,onToggle,fullScreen,children}){
       <button onClick={onToggle} style={{display:"flex",alignItems:"center",gap:7,width:"100%",background:"none",border:`1px solid ${open?"#444":BORDER}`,borderRadius:8,padding:"9px 12px",cursor:"pointer",color:open?TEXT:MUTED,fontSize:12,fontFamily:"inherit",marginBottom:open?10:0,transition:"border-color .15s"}}>
         <span style={{fontSize:11}}>{open?"▾":"▸"}</span>
         <span style={{fontWeight:600,letterSpacing:.5}}>More Options</span>
-        <span style={{marginLeft:"auto",fontSize:10,color:em}}>{open?"collapse":"action · link · priority · labels…"}</span>
+        <span style={{marginLeft:"auto",fontSize:10,color:msMu}}>{open?"collapse":"action · link · priority · labels…"}</span>
       </button>
       {open&&<div style={{padding:"12px",background:"#0a0a0a",borderRadius:8,border:`1px solid ${BORDER}`}}>{children}</div>}
     </div>
@@ -1266,7 +1274,7 @@ function EditMdl({task,tasks,buckets,actions,brands,persons,labels,onSave,onClos
   const bLbl={display:"block",fontSize:10,fontWeight:600,color:em,letterSpacing:1.2,textTransform:"uppercase",marginBottom:5};
   const bInp={width:"100%",padding:"9px 11px",borderRadius:8,border:`1px solid ${eb}`,fontSize:13,fontFamily:"inherit",color:et,background:ei,marginBottom:12,boxSizing:"border-box",outline:"none"};
   const bSel={...{width:"100%",padding:"9px 11px",borderRadius:8,border:`1px solid ${eb}`,fontSize:13,fontFamily:"inherit",color:et,background:ei,marginBottom:12,boxSizing:"border-box",outline:"none"},cursor:"pointer"};
-  const [f,setF]=useState({...task,completionLog:task.completionLog||[],bucketId:task.bucketId||null,duration:task.duration||"",time:task.time||"",link:task.link||"",attachments:task.attachments||[],priority:task.priority||"normal",eventDate:task.eventDate||"",action:task.action||"",brand:task.brand||"",gameday:task.gameday||"",person:task.person||"",labels:task.labels||[],keepLink:task.keepLink||"",notifyMins:task.notifyMins!=null?task.notifyMins:null});
+  const [f,setF]=useState({...task,completionLog:task.completionLog||[],bucketId:task.bucketId||null,duration:task.duration||"",time:task.time||"",link:task.link||"",attachments:task.attachments||[],priority:task.priority||"normal",eventDate:task.eventDate||"",action:task.action||"",brand:task.brand||"",gameday:task.gameday||"",person:task.person||"",labels:task.labels||[],keepLink:task.keepLink||"",notifyMins:task.notifyMins!=null?task.notifyMins:null,mundane:task.mundane||""});
   const [editingLink,setEditingLink]=useState(false);
   const [showMore,setShowMore]=useState(false);
   const set=(k,v)=>setF(x=>({...x,[k]:v}));
@@ -1389,6 +1397,14 @@ function EditMdl({task,tasks,buckets,actions,brands,persons,labels,onSave,onClos
               <option value="">None</option>
               {[...(actions||DEFAULT_ACTIONS)].sort((a,b)=>a.label.localeCompare(b.label)).map(a=><option key={a.id} value={a.label}>{a.emoji} {a.label}</option>)}
               {f.action&&!(actions||DEFAULT_ACTIONS).find(a=>a.label===f.action)&&<option value={f.action}>{f.action}</option>}
+            </select>
+          </div>
+          {/* Mundane */}
+          <div style={{marginBottom:12}}>
+            <label style={bLbl}>Mundane</label>
+            <select value={f.mundane||""} onChange={e=>set("mundane",e.target.value)} disabled={readOnly} style={{...bSel,marginBottom:0}}>
+              <option value="">---</option>
+              <option value="MUNDANE">MUNDANE</option>
             </select>
           </div>
           {/* Link + Keep */}
@@ -1629,7 +1645,7 @@ function TaskCard({task,buckets,onEdit,onDelete,onCheck,onDuplicate,showBucket,o
 }
 
 function ListView({tasks,buckets,activeTab,onEdit,onDelete,onCheck,readOnly,celebratingIds,onAddTask,boardId}){
-  const {col:lvBg,border:lvBorder,text:lvText,muted:lvMuted}=useTheme();
+  const {col:lvBg,border:lvBorder,text:lvText,muted:lvMuted,navBg:lvNav,lm:lvLm}=useTheme();
   const byTime=(a,b)=>t2m(a.time)-t2m(b.time);
   const ov=[...tasks.filter(t=>t.dueDate&&daysDiff(t.dueDate)<0)].sort(byTime);
   const td=[...tasks.filter(t=>t.dueDate&&daysDiff(t.dueDate)===0)].sort(byTime);
@@ -1670,10 +1686,11 @@ function ListView({tasks,buckets,activeTab,onEdit,onDelete,onCheck,readOnly,cele
 }
 
 function IpSection({tasks,onEdit,onCheck,celebratingIds,readOnly}){
+  const {navBg:ipNav,border:ipBo,text:ipTx}=useTheme();
   const [open,setOpen]=useState(true);
   return(
     <div style={{padding:"8px 16px 0",flexShrink:0}}>
-      <button onClick={()=>setOpen(o=>!o)} style={{display:"flex",alignItems:"center",gap:8,width:"100%",background:open?"#0a0f1a":"#0a0f1a",border:"1px solid #5E5CE644",borderRadius:8,padding:"8px 12px",cursor:"pointer",fontFamily:"inherit",marginBottom:open?4:0}}>
+      <button onClick={()=>setOpen(o=>!o)} style={{display:"flex",alignItems:"center",gap:8,width:"100%",background:ipNav,border:"1px solid #5E5CE644",borderRadius:8,padding:"8px 12px",cursor:"pointer",fontFamily:"inherit",marginBottom:open?4:0}}>
         <span style={{fontSize:12,color:"#5E5CE6"}}>◉</span>
         <span style={{fontSize:11,fontWeight:700,color:"#5E5CE6"}}>IN PROGRESS</span>
         <span style={{fontSize:10,color:"#5E5CE688",marginLeft:4}}>{tasks.length}</span>
@@ -1682,11 +1699,11 @@ function IpSection({tasks,onEdit,onCheck,celebratingIds,readOnly}){
       {open&&tasks.map(t=>{
         const isDone=t.done||(celebratingIds&&celebratingIds.has(t.id));
         return(
-          <div key={t.id} onClick={()=>onEdit(t)} style={{cursor:"pointer",padding:"7px 12px",borderBottom:`1px solid ${BORDER}`,display:"flex",alignItems:"center",gap:8,background:isDone?"#0a120a":"transparent",transition:"background .2s"}}>
+          <div key={t.id} onClick={()=>onEdit(t)} style={{cursor:"pointer",padding:"7px 12px",borderBottom:`1px solid ${ipBo}`,display:"flex",alignItems:"center",gap:8,background:isDone?"#0a120a":"transparent",transition:"background .2s"}}>
             {!readOnly&&<div onClick={e=>{e.stopPropagation();onCheck(t.id);}} style={{width:14,height:14,borderRadius:3,border:`1.5px solid ${isDone?"#30D158":"#5E5CE6"}`,background:isDone?"#30D158":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}}>
               {isDone&&<span style={{color:"#000",fontSize:7,fontWeight:900,lineHeight:1}}>✓</span>}
             </div>}
-            <span style={{fontSize:12,color:isDone?"#30D158":TEXT,flex:1,textDecoration:isDone?"line-through":"none"}}>{t.title||"Untitled"}</span>
+            <span style={{fontSize:12,color:isDone?"#30D158":ipTx,flex:1,textDecoration:isDone?"line-through":"none"}}>{t.title||"Untitled"}</span>
           </div>
         );
       })}
@@ -1697,7 +1714,7 @@ function IpSection({tasks,onEdit,onCheck,celebratingIds,readOnly}){
 function HourlyCalendar({tasks,buckets,onEdit,onCheck,readOnly,celebratingIds,sb,onAddTask,hideTimeFrames,dayFilter,activeTab,allBuckets}){
   const now=etNow();
   const curNm=now.getHours()*60+now.getMinutes();
-  const {showBucketColor:hcSBC,showDuration:hcSD,showFrequency:hcSF,showActionTag:hcSAT,showCardBg:hcSCB}=useTheme();
+  const {showBucketColor:hcSBC,showDuration:hcSD,showFrequency:hcSF,showActionTag:hcSAT,showCardBg:hcSCB,lm:hcLm,navBg:hcNav,cardBg:hcCard,border:hcBo,text:hcTx}=useTheme();
   const HOUR_H=56,MIN_H=22;
   const TF_FRAMES=[
     {label:"Morning",emoji:"🌅",color:"#FF9F0A",start:6*60,end:11*60+59},
@@ -1778,15 +1795,15 @@ function HourlyCalendar({tasks,buckets,onEdit,onCheck,readOnly,celebratingIds,sb
       {/* Overdue */}
       {overdue.length>0&&(
         <div style={{padding:"8px 16px 0",flexShrink:0}}>
-          <button onClick={()=>setOvExpanded(o=>!o)} style={{display:"flex",alignItems:"center",gap:8,width:"100%",background:ovExpanded?"#1a0808":"#110808",border:"1px solid #FF453A44",borderRadius:8,padding:"8px 12px",cursor:"pointer",fontFamily:"inherit",marginBottom:ovExpanded?6:0}}>
+          <button onClick={()=>setOvExpanded(o=>!o)} style={{display:"flex",alignItems:"center",gap:8,width:"100%",background:hcLm?(ovExpanded?"#ffe0e0":"#ffe8e8"):ovExpanded?"#1a0808":"#110808",border:"1px solid #FF453A44",borderRadius:8,padding:"8px 12px",cursor:"pointer",fontFamily:"inherit",marginBottom:ovExpanded?6:0}}>
             <span style={{fontSize:12,color:"#FF453A"}}>⚠</span>
             <span style={{fontSize:11,fontWeight:700,color:"#FF453A"}}>{overdue.length} OVERDUE</span>
             <span style={{marginLeft:"auto",fontSize:10,color:"#FF453A88"}}>{ovExpanded?"▾ hide":"▸ show"}</span>
           </button>
           {ovExpanded&&<div style={{paddingBottom:4}}>{[...overdue].sort((a,b)=>(a.dueDate||"").localeCompare(b.dueDate||"")).map(t=>(
-            <div key={t.id} onClick={()=>onEdit(t)} style={{cursor:"pointer",padding:"6px 10px",borderBottom:`1px solid ${BORDER}`}}>
+            <div key={t.id} onClick={()=>onEdit(t)} style={{cursor:"pointer",padding:"6px 10px",borderBottom:`1px solid ${hcBo}`}}>
               <span style={{fontSize:12,color:"#FF453A88",marginRight:6}}>{t.dueDate}</span>
-              <span style={{fontSize:12,color:TEXT}}>{t.title||"Untitled"}</span>
+              <span style={{fontSize:12,color:hcTx}}>{t.title||"Untitled"}</span>
             </div>
           ))}</div>}
         </div>
@@ -1826,7 +1843,7 @@ function HourlyCalendar({tasks,buckets,onEdit,onCheck,readOnly,celebratingIds,sb
                   onMouseLeave={e=>{e.currentTarget.style.color=hrCol;}}>
                   {hLabel(h)}
                 </span>
-                <div style={{flex:1,height:1,background:"#1a1a1a"}}/>
+                <div style={{flex:1,height:1,background:hcLm?"#c8ddf0":"#1a1a1a"}}/>
               </div>
               );
             })}
@@ -1851,9 +1868,9 @@ function HourlyCalendar({tasks,buckets,onEdit,onCheck,readOnly,celebratingIds,sb
                 const bkt=buckets.find(b=>b.id===t.bucketId);
                 const showBc=hcSBC&&bc;
                 const borderCol=showBc?bc+"55":"#2a2a2a";
-                const bg=showBc?bc+"0d":"#1c1c1e";
+                const bg=showBc?(hcLm?bc+"33":bc+"0d"):(hcLm?hcCard:"#1c1c1e");
                 const isDone=t.done||celebratingIds.has(t.id);
-                const titleCol=isDone?"#30D158":TEXT;
+                const titleCol=isDone?"#30D158":hcTx;
                 return(
                   <div key={t.id} onClick={()=>onEdit(t)} style={{position:"absolute",top,left:`calc(${col*100/cols}%)`,width:`calc(${100/cols}% - 4px)`,boxSizing:"border-box",paddingRight:4}}>
                     <div style={{height,background:bg,border:`1px solid ${borderCol}`,borderRadius:7,padding:"4px 7px",cursor:"pointer",overflow:"hidden",position:"relative"}}>
@@ -1887,9 +1904,9 @@ function HourlyCalendar({tasks,buckets,onEdit,onCheck,readOnly,celebratingIds,sb
               {untimedOpen&&todayUntimed.map(t=>{
                 const isDoneU=t.done||celebratingIds.has(t.id);
                 return(
-                  <div key={t.id} onClick={()=>onEdit(t)} style={{cursor:"pointer",padding:"7px 10px",borderRadius:7,background:isDoneU?"#0a120a":"#111",marginBottom:4,border:`1px solid ${isDoneU?"#30D15833":BORDER}`,display:"flex",alignItems:"center",gap:8}}>
+                  <div key={t.id} onClick={()=>onEdit(t)} style={{cursor:"pointer",padding:"7px 10px",borderRadius:7,background:isDoneU?"#0a120a":(hcLm?hcCard:"#111"),marginBottom:4,border:`1px solid ${isDoneU?"#30D15833":hcBo}`,display:"flex",alignItems:"center",gap:8}}>
                     {!readOnly&&<div onClick={e=>{e.stopPropagation();onCheck(t.id);}} style={{width:14,height:14,borderRadius:3,border:`1.5px solid ${isDoneU?"#30D158":"#444"}`,background:isDoneU?"#30D158":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}}>{isDoneU&&<span style={{color:"#000",fontSize:7,fontWeight:900,lineHeight:1}}>✓</span>}</div>}
-                    <span style={{fontSize:12,color:isDoneU?"#30D158":TEXT,textDecoration:isDoneU?"line-through":"none",opacity:isDoneU?.7:1,flex:1}}>{t.title||"Untitled"}</span>
+                    <span style={{fontSize:12,color:isDoneU?"#30D158":hcTx,textDecoration:isDoneU?"line-through":"none",opacity:isDoneU?.7:1,flex:1}}>{t.title||"Untitled"}</span>
                   </div>
                 );
               })}
@@ -1903,7 +1920,7 @@ function HourlyCalendar({tasks,buckets,onEdit,onCheck,readOnly,celebratingIds,sb
 
 
 function DayView({tasks,buckets,activeTab,onEdit,onDelete,onCheck,readOnly,celebratingIds,onAddTask,boardId,hideCalOverdue,showTomorrow,hideTimeFrames,onOpenModal}){
-  const {col:dvBg,border:dvBo,text:dvTx,muted:dvMu,cardBg:dvCard}=useTheme();
+  const {col:dvBg,border:dvBo,text:dvTx,muted:dvMu,cardBg:dvCard,lm:dvLm,navBg:dvNav}=useTheme();
   const sb=activeTab==="all";
   const rel=tasks.filter(t=>t.dueDate&&daysDiff(t.dueDate)<=0);
   const ov=rel.filter(t=>daysDiff(t.dueDate)<0);
@@ -1932,15 +1949,15 @@ function DayView({tasks,buckets,activeTab,onEdit,onDelete,onCheck,readOnly,celeb
 
   const Row=({task})=>{
     const isToday=task.dueDate&&daysDiff(task.dueDate)===0;
-    const timeColor="#555";
-    const dotBg="#2a2a2a";
-    const dotBorder="#333";
+    const timeColor=dvMu;
+    const dotBg=dvLm?"#b0c8e0":"#2a2a2a";
+    const dotBorder=dvLm?"#a0b8d0":"#333";
     return(
       <div style={{display:"flex",alignItems:"flex-start",marginBottom:4}}>
         <div style={{width:62,flexShrink:0,paddingTop:10,textAlign:"right",paddingRight:10,whiteSpace:"nowrap"}}>{task.time?<span onClick={e=>{e.stopPropagation();if(!readOnly){const nt=mkTask("do",boardId);nt.title="";nt.dueDate=todayStr();nt.time=task.time;onAddTask(nt);}}} style={{fontSize:10,color:timeColor,fontWeight:400,whiteSpace:"nowrap",cursor:readOnly?"default":"pointer"}}>{fmtTime(task.time)}</span>:<span style={{fontSize:9,color:"#2a2a2a"}}>—</span>}</div>
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",paddingTop:12,flexShrink:0,width:16}}>
           <div style={{width:8,height:8,borderRadius:"50%",background:dotBg,border:`1.5px solid ${dotBorder}`}}/>
-          <div style={{width:1,flex:1,background:"#1a1a1a",minHeight:16,marginTop:2}}/>
+          <div style={{width:1,flex:1,background:dvLm?"#b0c8e0":"#1a1a1a",minHeight:16,marginTop:2}}/>
         </div>
         <div style={{flex:1,paddingLeft:8,paddingBottom:4}}><TaskCard task={task} buckets={buckets} onEdit={onEdit} onDelete={onDelete} onCheck={onCheck} showBucket={sb} listMode={true} readOnly={readOnly} hideTime={true} hideToday={isToday&&!!task.time} celebrating={celebratingIds.has(task.id)} onDragStart={()=>{}} onDragOver={()=>{}} onDrop={()=>{}} isDragging={false}/></div>
       </div>
@@ -1961,7 +1978,7 @@ function DayView({tasks,buckets,activeTab,onEdit,onDelete,onCheck,readOnly,celeb
     const allClear=hasPassed&&unfinished.length===0;
     const hasProblems=hasPassed&&unfinished.length>0;
     const fmtStart=(()=>{const hr=Math.floor(frame.start/60);const h12=hr===0?12:hr>12?hr-12:hr;const ap=hr>=12?"pm":"am";return `${h12}:00 ${ap}`;})();
-    const headerBg=open?(isCurrent?"#071500":hasPassed?"#0a0a0a":"#111"):"#0c0c0c";
+    const headerBg=dvLm?(open?(isCurrent?"#d0f5e0":hasPassed?"#e0ecf8":"#e8f0f8"):"#deeaf5"):(open?(isCurrent?"#071500":hasPassed?"#0a0a0a":"#111"):"#0c0c0c");
     const borderColor=isCurrent?"#CAFF4C55":hasProblems?"#FF453A44":allClear?"#30D15844":open?"#333":BORDER;
     const labelColor=isCurrent?LIME:hasProblems?"#FF453A":allClear?"#30D158":"#ccc";
     const statusText=isCurrent?"▶ NOW":allClear?"✓ Cleared":hasProblems?`${unfinished.length} unfinished`:open?`${frameTasks.length} tasks`:`${frameTasks.length} task${frameTasks.length!==1?"s":""}`;
@@ -2030,7 +2047,7 @@ function DayView({tasks,buckets,activeTab,onEdit,onDelete,onCheck,readOnly,celeb
       <div style={{flex:1,overflowY:"auto",padding:"14px 0",maxWidth:600,margin:"0 auto",width:"100%"}}>
         {ov.length>0&&(
           <div style={{marginBottom:16,padding:"0 16px"}}>
-            <button onClick={()=>setOvExpanded(o=>!o)} style={{display:"flex",alignItems:"center",gap:8,width:"100%",background:ovExpanded?"#1a0808":"#110808",border:"1px solid #FF453A44",borderRadius:8,padding:"9px 14px",cursor:"pointer",fontFamily:"inherit",marginBottom:ovExpanded?10:0,transition:"margin .2s"}}>
+            <button onClick={()=>setOvExpanded(o=>!o)} style={{display:"flex",alignItems:"center",gap:8,width:"100%",background:dvLm?(ovExpanded?"#ffe0e0":"#ffe8e8"):(ovExpanded?"#1a0808":"#110808"),border:"1px solid #FF453A44",borderRadius:8,padding:"9px 14px",cursor:"pointer",fontFamily:"inherit",marginBottom:ovExpanded?10:0,transition:"margin .2s"}}>
               <span style={{fontSize:13,color:"#FF453A"}}>⚠</span>
               <span style={{fontSize:12,fontWeight:700,color:"#FF453A"}}>{ov.length} OVERDUE TASK{ov.length!==1?"S":""}</span>
               <span style={{marginLeft:"auto",fontSize:11,color:"#FF453A88"}}>{ovExpanded?"▾ hide":"▸ show"}</span>
@@ -2048,7 +2065,7 @@ function DayView({tasks,buckets,activeTab,onEdit,onDelete,onCheck,readOnly,celeb
             const uPreview=!untimedOpen?untimed.slice(0,3).map(t=>t.title||"Untitled").join(" · ")+(untimed.length>3?" …":""):"";
             return(
               <div style={{marginBottom:6}}>
-                <button onClick={()=>setUntimedOpen(o=>!o)} style={{display:"flex",alignItems:"center",gap:8,width:"100%",background:untimedOpen?"#111":"#0c0c0c",border:`1px solid ${ub>0?"#FF453A33":allDone?"#30D15833":BORDER}`,borderRadius:8,padding:"9px 12px",cursor:"pointer",fontFamily:"inherit",marginBottom:untimedOpen?4:0,transition:"all .2s"}}>
+                <button onClick={()=>setUntimedOpen(o=>!o)} style={{display:"flex",alignItems:"center",gap:8,width:"100%",background:dvLm?(untimedOpen?"#e8f0f8":"#deeaf5"):(untimedOpen?"#111":"#0c0c0c"),border:`1px solid ${ub>0?"#FF453A33":allDone?"#30D15833":dvBo}`,borderRadius:8,padding:"9px 12px",cursor:"pointer",fontFamily:"inherit",marginBottom:untimedOpen?4:0,transition:"all .2s"}}>
                   <span style={{fontSize:14,fontWeight:900,color:untimedOpen?"#666":"#aaa",minWidth:14,textAlign:"center",lineHeight:1}}>{untimedOpen?"▾":"▶"}</span>
                   <span style={{fontSize:11,fontWeight:700,color:allDone?"#30D158":ub>0?"#FF453A":"#ccc",letterSpacing:.5}}>⏱ NO TIME SET</span>
                   {!untimedOpen&&uPreview&&<span style={{fontSize:10,color:"#444",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginLeft:6,textAlign:"left"}}>{uPreview}</span>}
@@ -2276,7 +2293,8 @@ function DurationView({tasks,buckets,actions,brands,persons,labels,activeTab,onE
   const [durGamedayF,setDurGamedayF]=useState("all");
   const [durPersonF,setDurPersonF]=useState("all");
   const [durLabelsF,setDurLabelsF]=useState([]); // multi-select array of label ids
-  const selStyle={padding:"5px 9px",borderRadius:7,border:`1px solid ${BORDER}`,background:"#111",color:TEXT,fontSize:12,fontFamily:"inherit",cursor:"pointer",outline:"none"};
+  const {navBg:dvNav,inp:dvInp,border:dvBrd,text:dvTxt,muted:dvMtd}=useTheme();
+  const selStyle={padding:"5px 9px",borderRadius:7,border:`1px solid ${dvBrd}`,background:dvInp,color:dvTxt,fontSize:12,fontFamily:"inherit",cursor:"pointer",outline:"none"};
   // All tasks (no date gate - List view shows everything)
   const relevant=tasks;
   // Apply internal filters
@@ -2425,7 +2443,7 @@ function DurationView({tasks,buckets,actions,brands,persons,labels,activeTab,onE
   return(
     <div style={{flex:1,display:"flex",flexDirection:"column",minHeight:0}}>
       {/* Filter bar */}
-      <div style={{padding:"10px 16px",borderBottom:`1px solid ${BORDER}`,background:"#000",flexShrink:0,display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+      <div style={{padding:"10px 16px",borderBottom:`1px solid ${dvBrd}`,background:dvNav,flexShrink:0,display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
         <span style={{fontSize:11,color:MUTED,fontWeight:600,letterSpacing:.4}}>GROUP</span>
         <select value={groupBy} onChange={e=>setGroupBy(e.target.value)} style={selStyle}>
           <option value="status">Status</option>
@@ -2524,6 +2542,7 @@ function DurationView({tasks,buckets,actions,brands,persons,labels,activeTab,onE
 
 function QuickAddBar({boardId,onAdd,onOpenModal,readOnly}){
   if(readOnly)return null;
+  const {navBg:qaNav,inp:qaInp,border:qaBo,text:qaText,muted:qaMu}=useTheme();
   const [title,setTitle]=useState("");
   const ref=useRef();
   const submit=()=>{
@@ -2537,13 +2556,13 @@ function QuickAddBar({boardId,onAdd,onOpenModal,readOnly}){
   };
   const handlePlus=()=>{if(title.trim())submit();else onOpenModal();};
   return(
-    <div style={{padding:"8px 16px",borderBottom:`1px solid ${BORDER}`,background:"#000",flexShrink:0,display:"flex",gap:8,alignItems:"center"}}>
+    <div style={{padding:"8px 16px",borderBottom:`1px solid ${qaBo}`,background:qaNav,flexShrink:0,display:"flex",gap:8,alignItems:"center"}}>
       <input ref={ref} value={title} onChange={e=>setTitle(e.target.value)}
         onKeyDown={e=>{if(e.key==="Enter")submit();if(e.key==="Escape")setTitle("");}}
         placeholder="Add task for today…"
-        style={{flex:1,background:"#111",border:`1px solid ${title?"#444":BORDER}`,borderRadius:8,padding:"8px 12px",color:TEXT,fontSize:13,outline:"none",fontFamily:"inherit"}}
+        style={{flex:1,background:qaInp,border:`1px solid ${title?qaBo:qaBo}`,borderRadius:8,padding:"8px 12px",color:qaText,fontSize:13,outline:"none",fontFamily:"inherit"}}
         onFocus={FL} onBlur={FB}/>
-      <button onClick={handlePlus} style={{width:34,height:34,borderRadius:8,border:"none",background:title?LIME:"#1a1a1a",color:title?"#000":"#444",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background .15s,color .15s",fontWeight:700}}>+</button>
+      <button onClick={handlePlus} style={{width:34,height:34,borderRadius:8,border:"none",background:title?LIME:qaInp,color:title?"#000":qaMu,fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background .15s,color .15s",fontWeight:700}}>+</button>
     </div>
   );
 }
@@ -2599,6 +2618,7 @@ function RefCardModal({task,onSave,onClose,onMore,readOnly}){
 }
 
 function MonthlyView({tasks,buckets,onEdit,celebratingIds}){
+  const {text:mvTx,cardBg:mvCard,border:mvBo,lm:mvLm}=useTheme();
   const isBig=t=>{
     if(!t.frequency)return false;
     const p=parseFreq(t.frequency);
@@ -2658,7 +2678,7 @@ function MonthlyView({tasks,buckets,onEdit,celebratingIds}){
           <div key={mo.key} style={{marginBottom:36}}>
             {/* Big month header */}
             <div style={{display:"flex",alignItems:"baseline",gap:10,marginBottom:14}}>
-              <div style={{fontSize:22,fontWeight:900,color:TEXT,letterSpacing:-.5}}>{mo.label}</div>
+              <div style={{fontSize:22,fontWeight:900,color:mvTx,letterSpacing:-.5}}>{mo.label}</div>
               <div style={{flex:1,height:2,background:"#1a1a1a",marginLeft:4,borderRadius:1}}/>
             </div>
             {mo.chunks.map(ch=>(
@@ -2671,7 +2691,7 @@ function MonthlyView({tasks,buckets,onEdit,celebratingIds}){
                 {ch.items.map(({t,bkt,diff,isDone,dateColor,fp})=>{
                   const accent=bkt?.mainColor||null;
                   const cardBorder=isDone?"#30D15833":accent?(accent+"44"):BORDER;
-                  const cardBg=isDone?"#0a120a":accent?(accent+"0a"):"#0e0e0e";
+                  const cardBg=isDone?"#0a120a":accent?(mvLm?accent+"33":accent+"0a"):(mvLm?mvCard:"#0e0e0e");
                   const dueDt=t.dueDate?new Date(t.dueDate+"T00:00:00"):null;
                   const dayNum=dueDt?String(dueDt.getDate()).padStart(2,"0"):null;
                   const monAbbr=dueDt?["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][dueDt.getMonth()]:null;
@@ -2684,7 +2704,7 @@ function MonthlyView({tasks,buckets,onEdit,celebratingIds}){
                       {accent&&<div style={{width:3,alignSelf:"stretch",borderRadius:2,background:accent,flexShrink:0}}/>}
                       {/* Content */}
                       <div style={{flex:1,minWidth:0}}>
-                        <div style={{fontSize:13,color:isDone?"#30D158":TEXT,fontWeight:600,textDecoration:isDone?"line-through":"none",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.title||"Untitled"}</div>
+                        <div style={{fontSize:13,color:isDone?"#30D158":mvTx,fontWeight:600,textDecoration:isDone?"line-through":"none",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.title||"Untitled"}</div>
                         <div style={{display:"flex",alignItems:"center",gap:6,marginTop:3}}>
                           {bkt&&<span style={{fontSize:10,color:accent||MUTED,fontWeight:600}}>{bkt.emoji} {bkt.label}</span>}
                           <span style={{fontSize:10,color:"#5E5CE6"}}>{fp.label}</span>
@@ -2711,6 +2731,7 @@ function MonthlyView({tasks,buckets,onEdit,celebratingIds}){
 }
 
 function OnesiesView({tasks,buckets,onEdit,onCheck,onDelete,celebratingIds,readOnly,onAddTask,boardId}){
+  const {navBg:ovNav,border:ovBo,text:ovTx,muted:ovMu}=useTheme();
   const [adding,setAdding]=useState(false);
   const oneOffs=tasks.filter(t=>!t.isRef&&!(t.frequency&&t.frequency.trim()));
   const byTime=(a,b)=>{const at=a.time?t2m(a.time):9999,bt=b.time?t2m(b.time):9999;return at-bt||a.title.localeCompare(b.title);};
@@ -2732,7 +2753,7 @@ function OnesiesView({tasks,buckets,onEdit,onCheck,onDelete,celebratingIds,readO
   );
   return(
     <div style={{flex:1,display:"flex",flexDirection:"column",minHeight:0}}>
-      <div style={{padding:"10px 16px 8px",borderBottom:`1px solid ${BORDER}`,background:"#000",flexShrink:0,display:"flex",alignItems:"center",gap:8}}>
+      <div style={{padding:"10px 16px 8px",borderBottom:`1px solid ${ovBo}`,background:ovNav,flexShrink:0,display:"flex",alignItems:"center",gap:8}}>
         <span style={{fontSize:12,fontWeight:700,color:"#FF9F0A",letterSpacing:.6,textTransform:"uppercase"}}>① Onesies</span>
         <span style={{fontSize:11,color:MUTED}}>{total} one-off tasks</span>
         <div style={{flex:1}}/>
@@ -2758,7 +2779,7 @@ function OnesiesView({tasks,buckets,onEdit,onCheck,onDelete,celebratingIds,readO
 }
 
 function DashboardView({tasks,buckets,onEdit,onCheck,celebratingIds,readOnly,dayFilter}){
-  const {lm,text:dvText,cardBg:dvCardBg,border:dvBorder}=useTheme();
+  const {lm,text:dvText,cardBg:dvCardBg,border:dvBorder,muted:dvMuted,navBg:dvNavBg}=useTheme();
   const now=etNow();
   const nm=now.getHours()*60+now.getMinutes();
   const dateLbl=now.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
@@ -2893,8 +2914,8 @@ function DashboardView({tasks,buckets,onEdit,onCheck,celebratingIds,readOnly,day
       <div style={{flex:1,overflowY:"auto",padding:"16px 16px 32px"}}>
         <div style={{maxWidth:600,margin:"0 auto"}}>
           <div style={{marginBottom:20,textAlign:"center"}}>
-            <div style={{fontSize:11,color:MUTED,letterSpacing:1,textTransform:"uppercase",marginBottom:2}}>Day Preview</div>
-            <div style={{fontSize:18,fontWeight:800,color:TEXT,letterSpacing:-.3}}>{_pvLabel}</div>
+            <div style={{fontSize:11,color:dvMuted,letterSpacing:1,textTransform:"uppercase",marginBottom:2}}>Day Preview</div>
+            <div style={{fontSize:18,fontWeight:800,color:dvText,letterSpacing:-.3}}>{_pvLabel}</div>
             <div style={{marginTop:6,fontSize:12,color:MUTED}}>{_pvAll.length} tasks planned</div>
           </div>
           {_pvAll.length===0&&<div style={{textAlign:"center",padding:"32px 0",color:MUTED,fontSize:13,fontStyle:"italic"}}>Nothing scheduled for this day yet.</div>}
@@ -2912,8 +2933,8 @@ function DashboardView({tasks,buckets,onEdit,onCheck,celebratingIds,readOnly,day
     <div style={{flex:1,overflowY:"auto",padding:"16px 16px 32px"}}>
       <div style={{maxWidth:600,margin:"0 auto"}}>
         <div style={{marginBottom:20,textAlign:"center"}}>
-          <div style={{fontSize:11,color:MUTED,letterSpacing:1,textTransform:"uppercase",marginBottom:2}}>Today</div>
-          <div style={{fontSize:18,fontWeight:800,color:TEXT,letterSpacing:-.3}}>{dateLbl}</div>
+          <div style={{fontSize:11,color:dvMuted,letterSpacing:1,textTransform:"uppercase",marginBottom:2}}>Today</div>
+          <div style={{fontSize:18,fontWeight:800,color:dvText,letterSpacing:-.3}}>{dateLbl}</div>
           <div style={{marginTop:8,fontSize:12,color:MUTED,display:"flex",justifyContent:"center",gap:10,flexWrap:"wrap"}}>
             {overdue.length>0&&<span style={{color:"#FF453A",fontWeight:600}}>⚠ {overdue.length} overdue</span>}
             {missedToday.length>0&&<span style={{color:"#FF6B6B",fontWeight:600}}>⏱ {missedToday.length} missed today</span>}
@@ -2966,7 +2987,7 @@ function RefBoardView({tasks,buckets,boardId,onAdd,onEdit,readOnly}){
   const [draft,setDraft]=useState(""),draftRef=useRef();
   const [draftNotes,setDraftNotes]=useState(""),draftBkt=useRef(null);
   const [draftBucket,setDraftBucket]=useState("");
-  const {border:rb,inp:ri,text:rt,muted:rm,cardBg:rBg}=useTheme();
+  const {border:rb,inp:ri,text:rt,muted:rm,cardBg:rBg,navBg:rNav}=useTheme();
   const submit=()=>{
     const ttl=draft.trim();if(!ttl)return;
     const task=mkTask("list",boardId);
@@ -2979,7 +3000,7 @@ function RefBoardView({tasks,buckets,boardId,onAdd,onEdit,readOnly}){
   return(
     <div style={{display:"flex",flexDirection:"column",flex:1,minHeight:0}}>
       {!readOnly&&(
-        <div style={{padding:"12px 16px",borderBottom:`1px solid ${rb}`,background:"#000",flexShrink:0}}>
+        <div style={{padding:"12px 16px",borderBottom:`1px solid ${rb}`,background:rNav,flexShrink:0}}>
           <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:8}}>
             <input ref={draftRef} value={draft} onChange={e=>setDraft(e.target.value)}
               onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();submit();}}}
@@ -3051,12 +3072,12 @@ function InboxView({tasks,buckets,boardId,onAdd,onEdit,readOnly}){
     setTimeout(()=>inputRef.current?.focus(),50);
   };
   const bktEmoji=t=>{if(!t.bucketId)return null;const bkt=buckets.find(b=>b.id===t.bucketId);return bkt?.emoji||null;};
-  const {cardBg:ivBg,border:ivBo,text:ivTx,muted:ivMu,inp:ivInp}=useTheme();
+  const {cardBg:ivBg,border:ivBo,text:ivTx,muted:ivMu,inp:ivInp,navBg:ivNav}=useTheme();
   return(
     <div style={{display:"flex",flexDirection:"column",flex:1,minHeight:0}}>
       {/* Quick-add bar */}
       {!readOnly&&(
-        <div style={{padding:"10px 16px",borderBottom:`1px solid ${ivBo}`,background:"#000",flexShrink:0,display:"flex",gap:8,alignItems:"center"}}>
+        <div style={{padding:"10px 16px",borderBottom:`1px solid ${ivBo}`,background:ivNav,flexShrink:0,display:"flex",gap:8,alignItems:"center"}}>
           <input
             ref={inputRef}
             value={draft}
@@ -3155,7 +3176,7 @@ function HealthView({tasks,buckets,onEdit,activeTab,childBucketIds}){
   return(
     <div style={{display:"flex",flexDirection:"column",flex:1,minHeight:0}}>
       <div style={{padding:"10px 16px 6px",flexShrink:0,display:"flex",alignItems:"center",gap:10}}>
-        <input value={healthQ} onChange={e=>setHealthQ(e.target.value)} placeholder="Filter tasks…" style={{flex:1,padding:"6px 10px",borderRadius:8,border:`1px solid ${BORDER}`,background:"#111",color:TEXT,fontSize:12,fontFamily:"inherit",outline:"none"}}/>
+        <input value={healthQ} onChange={e=>setHealthQ(e.target.value)} placeholder="Filter tasks…" style={{flex:1,padding:"6px 10px",borderRadius:8,border:`1px solid ${hvBo}`,background:hvCard,color:hvTx,fontSize:12,fontFamily:"inherit",outline:"none"}}/>
         <span style={{fontSize:10,fontWeight:700,color:MUTED,letterSpacing:.5,flexShrink:0}}>⬡ {displayRows.length}</span>
       </div>
       <div style={{flex:1,overflowY:"auto",padding:"4px 16px 24px"}}>
@@ -3164,9 +3185,9 @@ function HealthView({tasks,buckets,onEdit,activeTab,childBucketIds}){
             const bkt=buckets.find(b=>b.id===t.bucketId);
             return(
               <div key={t.id} onClick={()=>onEdit(t)}
-                style={{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",borderRadius:8,background:"#111",marginBottom:4,border:`1px solid #1e1e1e`,cursor:"pointer"}}
-                onMouseEnter={e=>e.currentTarget.style.borderColor="#333"}
-                onMouseLeave={e=>e.currentTarget.style.borderColor="#1e1e1e"}>
+                style={{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",borderRadius:8,background:hvCard,marginBottom:4,border:`1px solid ${hvBo}`,cursor:"pointer"}}
+                onMouseEnter={e=>e.currentTarget.style.borderColor=hvBo}
+                onMouseLeave={e=>e.currentTarget.style.borderColor=hvBo}>
                 <span style={{flex:1,fontSize:13,color:hvTx,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.title||<span style={{color:MUTED,fontStyle:"italic"}}>Untitled</span>}</span>
                 <div style={{background:bg,border:`1px solid ${color}44`,borderRadius:6,padding:"3px 10px",flexShrink:0,minWidth:90,textAlign:"center"}}>
                   <span style={{fontSize:11,fontWeight:700,color,letterSpacing:.3}}>{status}</span>
@@ -3911,6 +3932,7 @@ function MainApp({user,board,allBoards,onSwitchBoard,onBack,onSignOut}){
   const vis=tasks.filter(t=>{
     if(t.isRef)return false;
     if(hiddenBucketIds.size>0&&t.bucketId&&hiddenBucketIds.has(t.bucketId))return false;
+    if(settings.hideMundane&&(t.mundane||"").toUpperCase()==="MUNDANE")return false;
     if(activeTab==="__nobudget__"){if(t.bucketId)return false;}
     else if(activeTab!=="all"&&t.bucketId!==activeTab&&!childBucketIds.includes(t.bucketId))return false;
     if(dayFilter==="alltasks")return true;
@@ -3940,7 +3962,8 @@ function MainApp({user,board,allBoards,onSwitchBoard,onBack,onSignOut}){
   const VIEWS=[{id:"inbox",icon:"⊟",label:"Inbox"},{id:"cal",icon:"▦",label:"Cal"},{id:"day",icon:"⏱",label:"Timeline"},{id:"board",icon:"⊞",label:"Board"},{id:"list",icon:"☰",label:"List"},{id:"health",icon:"⬡",label:"Health"},{id:"ref",icon:"⊟",label:"Ref"}];
 
   useEffect(()=>{document.documentElement.classList.toggle("light",!!settings.lightMode);},[settings.lightMode]);
-  if(loading)return(<div style={{height:"100%",display:"flex",alignItems:"center",justifyContent:"center",background:!!settings.lightMode?"#deeaf5":"#000",flexDirection:"column",gap:12}}><Logo size={36}/><div className="spin" style={{width:20,height:20,border:`2px solid ${BORDER}`,borderTopColor:LIME,borderRadius:"50%"}}/><div style={{fontSize:12,color:MUTED}}>Loading {board.name}…</div></div>);
+  const _lmEarly=!!settings.lightMode;
+  if(loading)return(<div style={{height:"100%",display:"flex",alignItems:"center",justifyContent:"center",background:_lmEarly?"#deeaf5":"#000",flexDirection:"column",gap:12}}><Logo size={36}/><div className="spin" style={{width:20,height:20,border:`2px solid ${BORDER}`,borderTopColor:LIME,borderRadius:"50%"}}/><div style={{fontSize:12,color:MUTED}}>Loading {board.name}…</div></div>);
 
   const lm=!!settings.lightMode;
   const _tVars=lm?{
@@ -3987,7 +4010,7 @@ function MainApp({user,board,allBoards,onSwitchBoard,onBack,onSignOut}){
             <Column key={col.id} col={col} boardId={board.id} buckets={buckets} activeTab={activeTab} tasks={vis.filter(t=>t.status===col.id)} onEdit={setEditing} onDelete={delTask} onCheck={checkTask} onDuplicate={duplicateTask} onAddTask={addTask} readOnly={readOnly} draggingId={draggingId} celebratingIds={celebratingIds} onDragStart={handleDragStart} onDragOver={()=>{}} onDrop={handleDrop} onDropCol={handleDropCol}/>
           ))}
         </div>
-        {!readOnly&&<div style={{padding:"8px 16px",borderTop:`1px solid ${BORDER}`,background:"#000",flexShrink:0,display:"flex",justifyContent:"flex-end"}}>
+        {!readOnly&&<div style={{padding:"8px 16px",borderTop:`1px solid ${theme.border}`,background:theme.navBg,flexShrink:0,display:"flex",justifyContent:"flex-end"}}>
           <button onClick={boardSort} style={{display:"flex",alignItems:"center",gap:6,padding:"7px 16px",borderRadius:8,border:"1px solid #5E5CE644",background:"#0a0a1a",color:"#5E5CE6",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",letterSpacing:.3}}>
             ⚡ SUPER SORT
           </button>
