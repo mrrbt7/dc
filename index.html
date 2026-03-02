@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="theme-color" content="#000000"/>
-<title>MR v3.9</title>
+<title>MR v3.10</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -37,11 +37,30 @@ html.light .tab-item{background:#d8eaf8;border-color:#a8c4e0;color:#446688}
 html.light .tab-item:hover{background:#c8dff0;color:#0a0a1a}
 html.light .tab-item.active{background:#c0d8ea;border-color:#a8c4e0;border-bottom-color:#c0d8ea;color:#CAFF4C}
 html.light .tab-bar-line{background:#a8c4e0}
+html.light .lm-nav-active{background:rgba(202,255,76,0.18)!important;border-radius:8px}
 /* === COMPREHENSIVE LIGHT MODE === */
+/* Full-screen manager panels */
+html.light [style*="position:fixed"][style*="background:#000"]{background:#deeaf5!important}
+html.light [style*="position:fixed"][style*="inset:0"]{background:#deeaf5!important}
 /* Manager modal inner rows */
 html.light [style*="background:#0a0a0a"]{background:#e8f2fa!important}
 html.light [style*="background: #0a0a0a"]{background:#e8f2fa!important}
-html.light [style*='background:"#0a0a0a"']{background:#e8f2fa!important}
+html.light [style*="background:#111"]{background:#e8f2fa!important}
+html.light [style*="background:#1a1a1a"]{background:#d8eaf8!important}
+html.light [style*="background:#222"]{background:#deeaf5!important}
+html.light [style*="background:#0c0c0c"]{background:#e4eef8!important}
+html.light [style*="background:#0e0e0e"]{background:#ffffff!important}
+html.light [style*="background:#1c1c1e"]{background:#ffffff!important}
+/* Fix super sort button in light mode */
+html.light [style*="background:#0a0a1a"]{background:#e0ecfa!important;color:#3a3aaa!important}
+/* Fix health status badges in light mode */
+html.light [style*="background:#1a0505"]{background:#ffe0e0!important}
+html.light [style*="background:#1a0d00"]{background:#fff0d0!important}
+html.light [style*="background:#071500"]{background:#d0f5e0!important}
+/* EditMdl scorecard */
+html.light [style*="background:#0c0c0c"]{background:#e8f0fa!important}
+/* Ref page + button */
+html.light [style*="background:#1a1a1a"]{background:#d8eaf8!important}
 
 html.light body,html.light #root{background:#deeaf5;color:#0a0a1a}
 html.light ::-webkit-scrollbar-thumb{background:#a8c4e0}
@@ -193,15 +212,23 @@ function Logo({size=24}){
   return(
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{flexShrink:0}}>
       <defs>
-        <linearGradient id="dcFire" x1="6" y1="22" x2="18" y2="2" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#FF4500"/>
-          <stop offset="45%" stopColor="#FF9F0A"/>
+        <radialGradient id="fg1" cx="40%" cy="80%" r="70%">
+          <stop offset="0%" stopColor="#FF2400"/>
+          <stop offset="40%" stopColor="#FF6B00"/>
+          <stop offset="75%" stopColor="#FFB800"/>
           <stop offset="100%" stopColor="#CAFF4C"/>
-        </linearGradient>
+        </radialGradient>
+        <radialGradient id="fg2" cx="50%" cy="90%" r="50%">
+          <stop offset="0%" stopColor="#FF4500" stopOpacity="1"/>
+          <stop offset="100%" stopColor="#FF9F0A" stopOpacity="0"/>
+        </radialGradient>
       </defs>
-      <rect width="24" height="24" rx="5" fill="#111"/>
-      <path d="M12 2C10 5 7 6 7.5 10C8 13 6 14.5 5 18C7.5 16.5 9 18.5 11 21C12 19 14 20 15 18C16 15 14 13.5 14.5 10C15 6 14 5 12 2Z" fill="url(#dcFire)"/>
-      <path d="M8.5 12.5L11 15.5L16 9.5" stroke="#111" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+      {/* outer flame */}
+      <path d="M12 1C11 4.5 8 6 7.5 10C7 13.5 9 15 8 18.5C10 17 11.5 19 12 21C12.5 19 14 17 16 18.5C15 15 17 13.5 16.5 10C16 6 13 4.5 12 1Z" fill="url(#fg1)"/>
+      {/* inner hot core */}
+      <path d="M12 8C11.5 10 10 11 10 13.5C11 12.5 12 14 12 16C12 14 13 12.5 14 13.5C14 11 12.5 10 12 8Z" fill="#fff" opacity="0.55"/>
+      {/* black checkmark at bottom */}
+      <path d="M9.5 16.5L11.5 18.5L15 14.5" stroke="#000" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }
@@ -641,16 +668,17 @@ function ImportModal({boardId,buckets,onImport,onClose}){
 }
 
 function LabelsMgrView({labels,onSave,onClose}){
+  const {navBg:mgrBg,border:mgrBo,text:mgrTx,muted:mgrMu,cardBg:mgrCard}=useTheme();
   const [list,setList]=useState((labels||[]).map(a=>({...a}))),[nw,setNw]=useState({emoji:"🏷",label:""});
   const [confirmDel,setConfirmDel]=useState(null);
   const upd=(id,k,v)=>setList(ls=>ls.map(a=>a.id===id?{...a,[k]:v}:a));
   const add=()=>{if(!nw.label.trim())return;setList(ls=>[...ls,{...nw,id:genId()}]);setNw({emoji:"🏷",label:""});};
   const del=id=>{setList(ls=>ls.filter(x=>x.id!==id));setConfirmDel(null);};
   return(
-    <div style={{position:"fixed",inset:0,background:"#000",zIndex:400,display:"flex",flexDirection:"column"}}>
-      <div style={{padding:"16px 18px",borderBottom:`1px solid ${BORDER}`,display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
-        <button onClick={onClose} style={{background:"none",border:"none",color:MUTED,fontSize:22,cursor:"pointer",lineHeight:1,padding:"0 4px"}}>‹</button>
-        <span style={{fontWeight:700,fontSize:16}}>🏷 Labels Manager</span>
+    <div style={{position:"fixed",inset:0,background:mgrBg,zIndex:400,display:"flex",flexDirection:"column"}}>
+      <div style={{padding:"16px 18px",borderBottom:`1px solid ${mgrBo}`,display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
+        <button onClick={onClose} style={{background:"none",border:"none",color:mgrMu,fontSize:22,cursor:"pointer",lineHeight:1,padding:"0 4px"}}>‹</button>
+        <span style={{fontWeight:700,fontSize:16,color:mgrTx}}>🏷 Labels Manager</span>
       </div>
       <div style={{flex:1,overflowY:"auto",padding:"16px 18px"}}>
         {list.map(a=>(
@@ -688,6 +716,7 @@ function LabelsMgrView({labels,onSave,onClose}){
 }
 
 function BucketMgr({buckets,onSave,onClose}){
+  const {navBg:mgrBg,border:mgrBo,text:mgrTx,muted:mgrMu,cardBg:mgrCard}=useTheme();
   const SWATCHES=["#FF2D55","#FF453A","#FF6B35","#FF9F0A","#FFD60A","#CAFF4C","#30D158","#4ECDC4","#00C7FF","#0A84FF","#5E5CE6","#BF5AF2","#FF375F","#FF6B9D","#C0392B","#E67E22","#27AE60","#16A085","#2980B9","#8E44AD","#E91E63","#FF5722","#795548","#607D8B"];
   const [list,setList]=useState(buckets.map(b=>({...b}))),[nw,setNw]=useState({emoji:"📦",label:"",mainColor:null,bgColor:null,parentId:null});
   const [menuOpen,setMenuOpen]=useState(null),[confirmDel,setConfirmDel]=useState(null);
@@ -759,10 +788,10 @@ function BucketMgr({buckets,onSave,onClose}){
     </div>
   );
   return(
-    <div style={{position:"fixed",inset:0,background:"#000",zIndex:400,display:"flex",flexDirection:"column"}}>
-      <div style={{padding:"16px 18px",borderBottom:`1px solid ${BORDER}`,display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
-        <button onClick={onClose} style={{background:"none",border:"none",color:MUTED,fontSize:22,cursor:"pointer",lineHeight:1,padding:"0 4px"}}>‹</button>
-        <span style={{fontWeight:700,fontSize:16}}>📦 Bucket Manager</span>
+    <div style={{position:"fixed",inset:0,background:mgrBg,zIndex:400,display:"flex",flexDirection:"column"}}>
+      <div style={{padding:"16px 18px",borderBottom:`1px solid ${mgrBo}`,display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
+        <button onClick={onClose} style={{background:"none",border:"none",color:mgrMu,fontSize:22,cursor:"pointer",lineHeight:1,padding:"0 4px"}}>‹</button>
+        <span style={{fontWeight:700,fontSize:16,color:mgrTx}}>📦 Bucket Manager</span>
       </div>
       <div style={{flex:1,overflowY:"auto",padding:"16px 18px"}}>
         {topLevel.sort((a,b)=>a.label.localeCompare(b.label)).map(b=>(
@@ -790,16 +819,17 @@ function BucketMgr({buckets,onSave,onClose}){
 
 
 function PersonMgrView({persons,onSave,onClose}){
+  const {navBg:mgrBg,border:mgrBo,text:mgrTx,muted:mgrMu,cardBg:mgrCard}=useTheme();
   const [list,setList]=useState((persons||[]).map(a=>({...a}))),[nw,setNw]=useState({emoji:"👤",label:""});
   const [confirmDel,setConfirmDel]=useState(null);
   const upd=(id,k,v)=>setList(ls=>ls.map(a=>a.id===id?{...a,[k]:v}:a));
   const add=()=>{if(!nw.label.trim())return;setList(ls=>[...ls,{...nw,id:genId()}]);setNw({emoji:"👤",label:""});};
   const del=id=>{setList(ls=>ls.filter(x=>x.id!==id));setConfirmDel(null);};
   return(
-    <div style={{position:"fixed",inset:0,background:"#000",zIndex:400,display:"flex",flexDirection:"column"}}>
-      <div style={{padding:"16px 18px",borderBottom:`1px solid ${BORDER}`,display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
-        <button onClick={onClose} style={{background:"none",border:"none",color:MUTED,fontSize:22,cursor:"pointer",lineHeight:1,padding:"0 4px"}}>‹</button>
-        <span style={{fontWeight:700,fontSize:16}}>👤 Person Manager</span>
+    <div style={{position:"fixed",inset:0,background:mgrBg,zIndex:400,display:"flex",flexDirection:"column"}}>
+      <div style={{padding:"16px 18px",borderBottom:`1px solid ${mgrBo}`,display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
+        <button onClick={onClose} style={{background:"none",border:"none",color:mgrMu,fontSize:22,cursor:"pointer",lineHeight:1,padding:"0 4px"}}>‹</button>
+        <span style={{fontWeight:700,fontSize:16,color:mgrTx}}>👤 Person Manager</span>
       </div>
       <div style={{flex:1,overflowY:"auto",padding:"16px 18px"}}>
         {list.map(a=>(
@@ -837,16 +867,17 @@ function PersonMgrView({persons,onSave,onClose}){
 }
 
 function BrandMgrView({brands,onSave,onClose}){
+  const {navBg:mgrBg,border:mgrBo,text:mgrTx,muted:mgrMu,cardBg:mgrCard}=useTheme();
   const [list,setList]=useState((brands||[]).map(a=>({...a}))),[nw,setNw]=useState({emoji:"🏷",label:""});
   const [confirmDel,setConfirmDel]=useState(null);
   const upd=(id,k,v)=>setList(ls=>ls.map(a=>a.id===id?{...a,[k]:v}:a));
   const add=()=>{if(!nw.label.trim())return;setList(ls=>[...ls,{...nw,id:genId()}]);setNw({emoji:"🏷",label:""});};
   const del=id=>{setList(ls=>ls.filter(x=>x.id!==id));setConfirmDel(null);};
   return(
-    <div style={{position:"fixed",inset:0,background:"#000",zIndex:400,display:"flex",flexDirection:"column"}}>
-      <div style={{padding:"16px 18px",borderBottom:`1px solid ${BORDER}`,display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
-        <button onClick={onClose} style={{background:"none",border:"none",color:MUTED,fontSize:22,cursor:"pointer",lineHeight:1,padding:"0 4px"}}>‹</button>
-        <span style={{fontWeight:700,fontSize:16}}>🏷 Brand Manager</span>
+    <div style={{position:"fixed",inset:0,background:mgrBg,zIndex:400,display:"flex",flexDirection:"column"}}>
+      <div style={{padding:"16px 18px",borderBottom:`1px solid ${mgrBo}`,display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
+        <button onClick={onClose} style={{background:"none",border:"none",color:mgrMu,fontSize:22,cursor:"pointer",lineHeight:1,padding:"0 4px"}}>‹</button>
+        <span style={{fontWeight:700,fontSize:16,color:mgrTx}}>🏷 Brand Manager</span>
       </div>
       <div style={{flex:1,overflowY:"auto",padding:"16px 18px"}}>
         {list.map(a=>(
@@ -881,16 +912,17 @@ function BrandMgrView({brands,onSave,onClose}){
 }
 
 function ActionMgr({actions,onSave,onClose}){
+  const {navBg:mgrBg,border:mgrBo,text:mgrTx,muted:mgrMu,cardBg:mgrCard}=useTheme();
   const [list,setList]=useState(actions.map(a=>({...a}))),[nw,setNw]=useState({emoji:"⚡",label:""});
   const [confirmDel,setConfirmDel]=useState(null);
   const upd=(id,k,v)=>setList(ls=>ls.map(a=>a.id===id?{...a,[k]:v}:a));
   const add=()=>{if(!nw.label.trim())return;setList(ls=>[...ls,{...nw,id:genId()}]);setNw({emoji:"⚡",label:""});};
   const del=id=>{setList(ls=>ls.filter(x=>x.id!==id));setConfirmDel(null);};
   return(
-    <div style={{position:"fixed",inset:0,background:"#000",zIndex:400,display:"flex",flexDirection:"column"}}>
-      <div style={{padding:"16px 18px",borderBottom:`1px solid ${BORDER}`,display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
-        <button onClick={onClose} style={{background:"none",border:"none",color:MUTED,fontSize:22,cursor:"pointer",lineHeight:1,padding:"0 4px"}}>‹</button>
-        <span style={{fontWeight:700,fontSize:16}}>⚡ Action Manager</span>
+    <div style={{position:"fixed",inset:0,background:mgrBg,zIndex:400,display:"flex",flexDirection:"column"}}>
+      <div style={{padding:"16px 18px",borderBottom:`1px solid ${mgrBo}`,display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
+        <button onClick={onClose} style={{background:"none",border:"none",color:mgrMu,fontSize:22,cursor:"pointer",lineHeight:1,padding:"0 4px"}}>‹</button>
+        <span style={{fontWeight:700,fontSize:16,color:mgrTx}}>⚡ Action Manager</span>
       </div>
       <div style={{flex:1,overflowY:"auto",padding:"16px 18px"}}>
         {list.map(a=>(
@@ -1828,7 +1860,7 @@ function HourlyCalendar({tasks,buckets,onEdit,onCheck,readOnly,celebratingIds,sb
                 <div key={fr.label} style={{position:"absolute",left:-50,top,width:6,height,borderRadius:3,background:fr.color+"55",pointerEvents:"none"}} title={fr.label}/>
               );
             })}
-            {/* Hour lines */}
+            {/* Hour lines - z-index:0 so event cards sit on top */}
             {HOURS.map((h,i)=>{
               const hm=h*60;
               const fr=TF_FRAMES.find(f=>hm>=f.start&&hm<f.end);
@@ -1837,7 +1869,7 @@ function HourlyCalendar({tasks,buckets,onEdit,onCheck,readOnly,celebratingIds,sb
               const hrCol=isActiveFr?fr.color:isPastFr?fr.color+"66":fr?"#333":"#444";
               const hrWeight=isActiveFr?700:400;
               return(
-              <div key={h} style={{position:"absolute",top:i*HOUR_H,left:-52,right:0,display:"flex",alignItems:"center"}}>
+              <div key={h} style={{position:"absolute",top:i*HOUR_H,left:-52,right:0,display:"flex",alignItems:"center",zIndex:0}}>
                 <span onClick={()=>clickHour(h)} style={{fontSize:10,color:hrCol,fontWeight:hrWeight,width:46,textAlign:"right",paddingRight:6,flexShrink:0,lineHeight:1,cursor:readOnly?"default":"pointer",whiteSpace:"nowrap",transition:"color .3s"}}
                   onMouseEnter={e=>{if(!readOnly)e.currentTarget.style.color=LIME;}}
                   onMouseLeave={e=>{e.currentTarget.style.color=hrCol;}}>
@@ -1847,9 +1879,9 @@ function HourlyCalendar({tasks,buckets,onEdit,onCheck,readOnly,celebratingIds,sb
               </div>
               );
             })}
-            {/* Half-hour dashes */}
+            {/* Half-hour dashes - z-index:0 behind cards */}
             {HOURS.slice(0,-1).map((h,i)=>(
-              <div key={`half-${h}`} style={{position:"absolute",top:i*HOUR_H+HOUR_H/2,left:0,right:0,height:1,background:"#111",pointerEvents:"none"}}/>
+              <div key={`half-${h}`} style={{position:"absolute",top:i*HOUR_H+HOUR_H/2,left:0,right:0,height:1,background:"#111",pointerEvents:"none",zIndex:0}}/>
             ))}
             {/* Now line */}
             {showNowLine&&(
@@ -1859,8 +1891,8 @@ function HourlyCalendar({tasks,buckets,onEdit,onCheck,readOnly,celebratingIds,sb
                 <div style={{flex:1,height:2,background:`linear-gradient(90deg,${LIME},${LIME}44,transparent)`,borderRadius:1}}/>
               </div>
             )}
-            {/* Event blocks */}
-            <div style={{position:"relative",height:totalH,marginLeft:8}}>
+            {/* Event blocks - z-index:1 above grid lines */}
+            <div style={{position:"relative",height:totalH,marginLeft:8,zIndex:1}}>
               {placed.map(({t,sm,em,dur,col,cols})=>{
                 const top=(sm-START_H*60)/60*HOUR_H;
                 const height=Math.max(dur/60*HOUR_H,MIN_H);
@@ -2822,9 +2854,7 @@ function DashboardView({tasks,buckets,onEdit,onCheck,celebratingIds,readOnly,day
     const isCelebrating=celebratingIds.has(t.id);
     const isDone=t.done||isCelebrating;
     const isIP=t.status==="inprogress"&&!(t.frequency&&t.frequency.trim());
-    const [visible,setVisible]=useState(true);
-    useEffect(()=>{if(isDone){const timer=setTimeout(()=>setVisible(false),1800);return()=>clearTimeout(timer);}else{setVisible(true);}},[isDone]);
-    if(!visible||(t.done&&!isCelebrating))return null;
+    if(t.done&&!isCelebrating)return null;
     return(
       <div onClick={()=>onEdit(t)}
         style={{background:isDone?(lm?"#e8f5e8":"#0a120a"):(lm?"#ffffff":"#0e0e0e"),borderRadius:10,border:`1px solid ${isDone?"#30D15833":color+"33"}`,padding:"12px 14px",marginBottom:6,cursor:"pointer",display:"flex",alignItems:"center",gap:10,transition:"all .4s",opacity:isDone?.6:1}}
@@ -2866,7 +2896,7 @@ function DashboardView({tasks,buckets,onEdit,onCheck,celebratingIds,readOnly,day
   );
 
   // ── Date Preview Mode (any specific date from dropdown) ────────────────
-  const _isSpecificDate=dayFilter!=="today"&&dayFilter!=="all"&&dayFilter!=="overdue"&&dayFilter!=="todaytomorrow"&&dayFilter!=="nodate"&&dayFilter!=="alltasks";
+  const _isSpecificDate=dayFilter!=="today"&&dayFilter!=="todaynomundane"&&dayFilter!=="all"&&dayFilter!=="overdue"&&dayFilter!=="todaytomorrow"&&dayFilter!=="nodate"&&dayFilter!=="alltasks";
   if(_isSpecificDate){
     // Compute the preview date string and label
     let _pvDateStr,_pvLabel;
@@ -3007,7 +3037,7 @@ function RefBoardView({tasks,buckets,boardId,onAdd,onEdit,readOnly}){
               placeholder="Add reference note… Enter to save"
               style={{flex:1,background:ri,border:`1px solid ${draft?"#444":rb}`,borderRadius:8,padding:"9px 13px",color:rt,fontSize:13,fontFamily:"inherit",outline:"none"}}
               onFocus={FL} onBlur={FB}/>
-            <button onClick={submit} style={{width:36,height:36,borderRadius:8,border:"none",background:draft?LIME:"#1a1a1a",color:draft?"#000":"#444",fontSize:22,fontWeight:700,cursor:"pointer",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
+            <button onClick={submit} style={{width:36,height:36,borderRadius:8,border:"none",background:draft?LIME:ri,color:draft?"#000":rm,fontSize:22,fontWeight:700,cursor:"pointer",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
           </div>
           <div style={{display:"flex",gap:8,alignItems:"flex-start"}}>
             <textarea value={draftNotes} onChange={e=>setDraftNotes(e.target.value)} placeholder="Notes (optional)…" rows={2}
@@ -3127,7 +3157,7 @@ function InboxView({tasks,buckets,boardId,onAdd,onEdit,readOnly}){
 }
 
 function HealthView({tasks,buckets,onEdit,activeTab,childBucketIds}){
-  const {text:hvTx,border:hvBo,cardBg:hvCard}=useTheme();
+  const {text:hvTx,border:hvBo,cardBg:hvCard,lm:hvLm}=useTheme();
   // Bucket filter (respects activeTab, ignores date filter)
   const bktFiltered=tasks.filter(t=>{
     if(!activeTab||activeTab==="all")return true;
@@ -3142,9 +3172,9 @@ function HealthView({tasks,buckets,onEdit,activeTab,childBucketIds}){
       let status,color,bg,sortKey;
       if(dt!==null){
         // Use deltaTally: negative=overdue, 0=due, positive=good
-        if(dt<0){status=`OVERDUE ${Math.abs(dt)}d`;color="#FF453A";bg="#1a0505";sortKey=dt;}
-        else if(dt===0){status="DUE";color="#FF9F0A";bg="#1a0d00";sortKey=0;}
-        else{status=`GOOD +${dt}d`;color="#30D158";bg="#071500";sortKey=dt;}
+        if(dt<0){status=`OVERDUE ${Math.abs(dt)}d`;color="#FF453A";bg=hvLm?"#ffe0e0":"#1a0505";sortKey=dt;}
+        else if(dt===0){status="DUE";color="#FF9F0A";bg=hvLm?"#fff0d0":"#1a0d00";sortKey=0;}
+        else{status=`GOOD +${dt}d`;color="#30D158";bg=hvLm?"#d0f5e0":"#071500";sortKey=dt;}
       } else {
         // No frequency: use date
         if(dueDiff<0){status=`OVERDUE ${Math.abs(dueDiff)}d`;color="#FF453A";bg="#1a0505";sortKey=dueDiff;}
@@ -3163,9 +3193,9 @@ function HealthView({tasks,buckets,onEdit,activeTab,childBucketIds}){
       .map(t=>{
         const dueDiff=t.dueDate?daysDiff(t.dueDate):0;
         let status,color,bg,sortKey;
-        if(dueDiff<0){status=`OVERDUE ${Math.abs(dueDiff)}d`;color="#FF453A";bg="#1a0505";sortKey=dueDiff;}
-        else if(dueDiff===0){status="DUE";color="#FF9F0A";bg="#1a0d00";sortKey=0;}
-        else{status=`GOOD +${dueDiff}d`;color="#30D158";bg="#071500";sortKey=dueDiff;}
+        if(dueDiff<0){status=`OVERDUE ${Math.abs(dueDiff)}d`;color="#FF453A";bg=hvLm?"#ffe0e0":"#1a0505";sortKey=dueDiff;}
+        else if(dueDiff===0){status="DUE";color="#FF9F0A";bg=hvLm?"#fff0d0":"#1a0d00";sortKey=0;}
+        else{status=`GOOD +${dueDiff}d`;color="#30D158";bg=hvLm?"#d0f5e0":"#071500";sortKey=dueDiff;}
         return{t,status,color,bg,sortKey};
       })
       .sort((a,b)=>a.sortKey-b.sortKey)
@@ -3319,6 +3349,7 @@ function DayFilterDropdown({value,onChange}){
     ...wdOpts,
     {id:"__sep__"},
     {id:"todaytomorrow",label:"Today + Tomorrow"},
+    {id:"todaynomundane",label:"Today (No Mundane)"},
     {id:"all",label:"All Dates"},
     {id:"nodate",label:"Has No Date"},
     {id:"alltasks",label:"All Tasks"},
@@ -3618,7 +3649,8 @@ function MainApp({user,board,allBoards,onSwitchBoard,onBack,onSignOut}){
   const [loading,setLoading]=useState(true),[userRole,setUserRole]=useState("editor"),[syncing,setSyncing]=useState(false);
   const handleEdit=useCallback(t=>{if(t&&t.isRef)setEditingRef(t);else setEditing(t);},[]);
   const [celebratingIds,setCelebratingIds]=useState(new Set());
-  const celebratingRef=useRef(new Set()); // tracks IDs mid-celebration to block realtime clobber
+  const celebratingRef=useRef(new Set());
+  const doneTaskIds=useRef(new Set()); // permanently tracks tasks checked done this session // tracks IDs mid-celebration to block realtime clobber
   const [showQuickAdd,setShowQuickAdd]=useState(false);
   const [showSidebar,setShowSidebar]=useState(false);
   const [showLog,setShowLog]=useState(false);
@@ -3692,8 +3724,8 @@ function MainApp({user,board,allBoards,onSwitchBoard,onBack,onSignOut}){
       setLoading(false);
       subRef.current=sub=db.channel(`board-${board.id}`)
         .on("postgres_changes",{event:"*",schema:"public",table:"tasks",filter:`board_id=eq.${board.id}`},({eventType,new:n,old:o})=>{
-          if(eventType==="INSERT")setTasks(ts=>[...ts.filter(t=>t.id!==n.id),dbToTask(n)]);
-          if(eventType==="UPDATE"){if(!celebratingRef.current.has(n.id))setTasks(ts=>ts.map(t=>t.id===n.id?dbToTask(n):t));}
+          if(eventType==="INSERT"){if(!celebratingRef.current.has(n.id))setTasks(ts=>{if(ts.some(t=>t.id===n.id))return ts;return[...ts,dbToTask(n)];});}
+          if(eventType==="UPDATE"){if(!celebratingRef.current.has(n.id)&&!doneTaskIds.current.has(n.id))setTasks(ts=>ts.map(t=>t.id===n.id?dbToTask(n):t));}
           if(eventType==="DELETE")setTasks(ts=>ts.filter(t=>t.id!==o.id));
         })
         .on("postgres_changes",{event:"*",schema:"public",table:"buckets",filter:`board_id=eq.${board.id}`},()=>{
@@ -3847,6 +3879,7 @@ function MainApp({user,board,allBoards,onSwitchBoard,onBack,onSignOut}){
     };
     if(!hasFreq){
       // One-off: mark done in state immediately, celebrate, then persist to DB
+      doneTaskIds.current.add(id); // block any realtime re-insertion
       const u={...ct,done:true,completionLog:[...(ct.completionLog||[]),e]};
       setTasks(ts=>ts.map(t=>t.id===id?u:t));
       celebratingRef.current.add(id);
@@ -3941,6 +3974,7 @@ function MainApp({user,board,allBoards,onSwitchBoard,onBack,onSignOut}){
     if(dayFilter==="all")return true;
     const d=daysDiff(t.dueDate);
     if(dayFilter==="today")return d<=0;
+    if(dayFilter==="todaynomundane"){if((t.mundane||"").toUpperCase()==="MUNDANE")return false;return d<=0;}
     if(dayFilter==="todaytomorrow")return d<=1;
     if(dayFilter==="tomorrow")return d===1;
     if(dayFilter==="overdue")return d<0;
@@ -4010,8 +4044,11 @@ function MainApp({user,board,allBoards,onSwitchBoard,onBack,onSignOut}){
             <Column key={col.id} col={col} boardId={board.id} buckets={buckets} activeTab={activeTab} tasks={vis.filter(t=>t.status===col.id)} onEdit={setEditing} onDelete={delTask} onCheck={checkTask} onDuplicate={duplicateTask} onAddTask={addTask} readOnly={readOnly} draggingId={draggingId} celebratingIds={celebratingIds} onDragStart={handleDragStart} onDragOver={()=>{}} onDrop={handleDrop} onDropCol={handleDropCol}/>
           ))}
         </div>
-        {!readOnly&&<div style={{padding:"8px 16px",borderTop:`1px solid ${theme.border}`,background:theme.navBg,flexShrink:0,display:"flex",justifyContent:"flex-end"}}>
-          <button onClick={boardSort} style={{display:"flex",alignItems:"center",gap:6,padding:"7px 16px",borderRadius:8,border:"1px solid #5E5CE644",background:"#0a0a1a",color:"#5E5CE6",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",letterSpacing:.3}}>
+        {!readOnly&&<div style={{padding:"8px 16px",borderTop:`1px solid ${theme.border}`,background:theme.navBg,flexShrink:0,display:"flex",gap:8,justifyContent:"flex-end"}}>
+          <button onClick={snoozeAllOverdue} style={{display:"flex",alignItems:"center",gap:6,padding:"7px 16px",borderRadius:8,border:"1px solid #FF9F0A44",background:theme.lm?"#fff3d0":"#1a0e00",color:"#FF9F0A",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",letterSpacing:.3}}>
+            💤 SNOOZE OVERDUE
+          </button>
+          <button onClick={boardSort} style={{display:"flex",alignItems:"center",gap:6,padding:"7px 16px",borderRadius:8,border:"1px solid #5E5CE644",background:theme.lm?"#e8e8ff":"#0a0a1a",color:"#5E5CE6",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",letterSpacing:.3}}>
             ⚡ SUPER SORT
           </button>
         </div>}
@@ -4053,7 +4090,7 @@ function MainApp({user,board,allBoards,onSwitchBoard,onBack,onSignOut}){
             return(
               <button key={v.id}
                 onClick={()=>v.id==="__search__"?setShowSearch(true):setViewMode(v.id)}
-                style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,background:"none",border:"none",cursor:"pointer",color:active?LIME:theme.muted,borderTop:active?`2px solid ${LIME}`:"2px solid transparent",transition:"color .15s,border-color .15s",padding:"6px 2px 4px"}}>
+                style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,background:"none",border:"none",cursor:"pointer",color:active?LIME:theme.muted,borderTop:active?`2px solid ${LIME}`:"2px solid transparent",transition:"color .15s,border-color .15s",padding:"6px 2px 4px"}} className={active&&theme.lm?"lm-nav-active":""}>
                 <span style={{fontSize:16,lineHeight:1}}>{v.icon}</span>
                 <span style={{fontSize:7.5,letterSpacing:.4,fontWeight:active?700:400,textTransform:"uppercase"}}>{v.label}</span>
               </button>
